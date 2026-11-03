@@ -1,7 +1,5 @@
 import { type NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-
 /** Railway (or local) API origin without a trailing slash. Set on Vercel when using *.vercel.app + *.railway.app. */
 function backendOrigin(): string | null {
   const raw = process.env.API_PROXY_TARGET?.trim();
@@ -48,6 +46,7 @@ async function proxy(request: NextRequest, path: string[]): Promise<Response> {
     method,
     headers,
     redirect: "manual",
+    cache: "no-store",
   };
   if (hasBody) {
     init.body = request.body;
