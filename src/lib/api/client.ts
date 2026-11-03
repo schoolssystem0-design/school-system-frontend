@@ -2,8 +2,10 @@ import type { components } from "./schema";
 
 export type Schemas = components["schemas"];
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+/** Local dev defaults to the API on :8080; on Vercel use `/api/v1` with {@link next.config.ts} rewrites. */
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1"
+).replace(/\/$/, "");
 
 export type FieldError = { field: string; code: string; message: string };
 
