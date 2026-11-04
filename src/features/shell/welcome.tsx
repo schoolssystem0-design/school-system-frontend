@@ -1,11 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CalendarRange, Check, ChevronRight, Rocket, School, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { PageHeader } from "@/components/app/page-header";
 import { DashboardPanels } from "@/features/dashboard/dashboard-page";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { academics, school } from "@/lib/api/endpoints";
 import { can, P } from "@/lib/permissions";
 import { useMe } from "./app-shell";
@@ -66,34 +65,96 @@ export function Welcome() {
     },
   ].filter((s) => s.show);
 
+  const showSetup = steps.some((s) => !s.done && s.href !== "/app/users");
+  const doneCount = steps.filter((s) => s.done).length;
+  const progress = steps.length === 0 ? 0 : Math.round((doneCount * 100) / steps.length);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title={`Welcome, ${me.data.displayName}`}
-        description={`${me.data.school?.name}${current ? ` · Academic year ${current.name}` : ""}`}
-      />
-      {steps.some((s) => !s.done && s.href !== "/app/users") && (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Set up your school</CardTitle>
-            <CardDescription>Complete these steps once; you can change everything later.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ol className="flex flex-col gap-2">
-              {steps.map((step) => (
-                <li key={step.href} className="flex items-center gap-2 text-sm">
-                  {step.done ? (
-                    <CheckCircle2 className="size-4 text-emerald-600" aria-label="Done" />
-                  ) : (
-                    <Circle className="size-4 text-muted-foreground" aria-label="To do" />
-                  )}
-                  <Link href={step.href} className="underline-offset-4 hover:underline">
-                    {step.label}
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
+      <section className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-6 text-white shadow-lg shadow-indigo-500/20 sm:px-8 sm:py-8">
+        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 -z-10 size-64 rounded-full bg-white/10 blur-2xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/3 -z-10 size-72 rounded-full bg-fuchsia-300/20 blur-3xl" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.08] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:18px_18px]"
+        />
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-sm font-medium text-white/80">
+              <Sparkles className="size-4" aria-hidden /> {greeting} · {today}
+            </p>
+            <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">Welcome, {me.data.displayName}</h1>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium">
+              <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20 backdrop-blur">
+                <School className="size-3.5" aria-hidden /> {me.data.school?.name}
+              </span>
+              {current && (
+                <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20 backdrop-blur">
+                  <CalendarRange className="size-3.5" aria-hidden /> Academic year {current.name}
+                </span>
+              )}
+            </div>
+          </div>
+          <span aria-hidden className="hidden size-20 shrink-0 items-center justify-center rounded-3xl bg-white/15 ring-1 ring-white/25 backdrop-blur sm:flex">
+            <School className="size-10" />
+          </span>
+        </div>
+      </section>
+      {showSetup && (
+        <Card className="max-w-3xl gap-0 p-0">
+          <div className="flex items-start gap-3 border-b p-4 sm:p-5">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Rocket className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold">Set up your school</h2>
+              <p className="text-sm text-muted-foreground">Complete these steps once; you can change everything later.</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div
+                  role="progressbar"
+                  aria-label="Set-up progress"
+                  aria-valuenow={progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
+                >
+                  <span className="block h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all" style={{ width: `${progress}%` }} />
+                </div>
+                <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                  {doneCount}/{steps.length}
+                </span>
+              </div>
+            </div>
+          </div>
+          <ol className="flex flex-col p-2">
+            {steps.map((step, i) => (
+              <li key={step.href} className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted">
+                {step.done ? (
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white" role="img" aria-label="Done">
+                    <Check className="size-3.5" aria-hidden />
+                  </span>
+                ) : (
+                  <span
+                    className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-[11px] font-semibold text-muted-foreground"
+                    role="img"
+                    aria-label="To do"
+                  >
+                    <span aria-hidden>{i + 1}</span>
+                  </span>
+                )}
+                <Link
+                  href={step.href}
+                  className={`flex-1 after:absolute after:inset-0 after:rounded-lg ${step.done ? "text-muted-foreground line-through decoration-muted-foreground/40" : "font-medium"}`}
+                >
+                  {step.label}
+                </Link>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </li>
+            ))}
+          </ol>
         </Card>
       )}
       <DashboardPanels />

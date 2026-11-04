@@ -447,7 +447,7 @@ export function CalendarPage() {
         description="School events, holidays and examinations. Days the school is closed for attendance are set under Academic years."
         actions={manage ? <Button onClick={() => setAdding(today())}>New event</Button> : undefined}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>Previous</Button>
         <Button variant="outline" size="sm" onClick={() => { const d = new Date(`${today()}T00:00:00`); setMonth(new Date(d.getFullYear(), d.getMonth(), 1)); }}>Today</Button>
         <Button variant="outline" size="sm" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>Next</Button>
@@ -457,7 +457,7 @@ export function CalendarPage() {
         <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-border text-sm">
           {WEEK_DAYS.map((d) => <div key={d} className="bg-muted p-2 text-center text-xs font-medium">{d}</div>)}
           {cells.map((date, i) => (
-            <div key={date ?? `blank-${i}`} className={cn("min-h-24 bg-background p-1", date === today() && "ring-2 ring-inset ring-primary")}>
+            <div key={date ?? `blank-${i}`} className={cn("min-h-16 min-w-0 bg-background p-1 sm:min-h-24", date === today() && "ring-2 ring-inset ring-primary")}>
               {date && (
                 <>
                   {manage ? (

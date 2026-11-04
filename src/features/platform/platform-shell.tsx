@@ -63,34 +63,48 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex h-14 items-center justify-between gap-4 bg-indigo-800 px-6 text-white print:hidden">
-        <span className="flex items-center gap-2 font-semibold">
-          <ShieldCheck className="size-5" aria-hidden /> Platform console
-        </span>
-        <nav aria-label="Platform" className="flex items-center gap-1">
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = href === "/platform" ? pathname === href : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-white/10 aria-[current=page]:bg-white/20"
-              >
-                <Icon className="size-4" aria-hidden />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-3 text-sm">
-          <span>{me.data.name}</span>
-          <Button size="sm" variant="secondary" onClick={() => signOut.mutate()}>
-            <LogOut aria-hidden /> Sign out
-          </Button>
+      <header className="sticky top-0 z-30 bg-gradient-to-r from-slate-950 via-indigo-950 to-violet-950 text-white shadow-lg shadow-indigo-950/20 print:hidden">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
+          <span className="flex items-center gap-2.5 font-semibold">
+            <span aria-hidden className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-fuchsia-500 shadow-md shadow-fuchsia-500/30">
+              <ShieldCheck className="size-5" />
+            </span>
+            <span className="leading-tight">
+              Platform console
+              <span className="block text-[11px] font-normal text-white/60">System owner</span>
+            </span>
+          </span>
+          <nav
+            aria-label="Platform"
+            className="no-scrollbar order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-1 overflow-x-auto px-4 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:px-6 lg:order-none lg:mx-auto lg:w-auto lg:px-0"
+          >
+            {NAV.map(({ href, label, icon: Icon }) => {
+              const active = href === "/platform" ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white aria-[current=page]:bg-white aria-[current=page]:font-medium aria-[current=page]:text-indigo-950"
+                >
+                  <Icon className="size-4" aria-hidden />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="ms-auto flex items-center gap-3 text-sm lg:ms-0">
+            <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-white/15 text-xs font-semibold ring-1 ring-white/25">
+              {(me.data.name ?? "?").trim().slice(0, 1).toUpperCase()}
+            </span>
+            <span className="hidden max-w-40 truncate sm:inline">{me.data.name}</span>
+            <Button size="sm" variant="secondary" className="rounded-full" onClick={() => signOut.mutate()} aria-label="Sign out">
+              <LogOut aria-hidden /> <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
         </div>
       </header>
-      <main id="main" className="flex-1 p-6">
+      <main id="main" className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
         {children}
       </main>
       <Toaster richColors position="top-right" />

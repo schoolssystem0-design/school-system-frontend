@@ -27,8 +27,10 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
 
 export function Empty({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed py-12 text-center">
-      <Inbox className="size-6 text-muted-foreground" aria-hidden />
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed bg-card/50 px-4 py-12 text-center">
+      <span aria-hidden className="mb-1 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <Inbox className="size-6" />
+      </span>
       <p className="font-medium">{title}</p>
       {children && <div className="text-sm text-muted-foreground">{children}</div>}
     </div>

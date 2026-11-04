@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Plus, Trash2, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -68,9 +68,9 @@ export function PlatformOverview() {
         }
       />
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Schools" value={data.schools} />
-        <Stat label="Active schools" value={data.activeSchools} />
-        <Stat label="User accounts" value={data.users} />
+        <Stat label="Schools" value={data.schools} icon={Building2} chip="bg-indigo-500/10 text-indigo-600 dark:text-indigo-300" />
+        <Stat label="Active schools" value={data.activeSchools} icon={CheckCircle2} chip="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
+        <Stat label="User accounts" value={data.users} icon={Users} chip="bg-violet-500/10 text-violet-600 dark:text-violet-300" />
       </div>
       <Card>
         <CardContent className="p-0">
@@ -126,13 +126,17 @@ export function PlatformOverview() {
   );
 }
 
-function Stat({ label, value }: { label: string; value?: number }) {
+
+function Stat({ label, value, icon: Icon, chip }: { label: string; value?: number; icon: LucideIcon; chip: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="text-3xl">{value ?? 0}</CardTitle>
-      </CardHeader>
+    <Card className="gap-0 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <span aria-hidden className={`flex size-10 items-center justify-center rounded-xl ${chip}`}>
+          <Icon className="size-5" />
+        </span>
+      </div>
+      <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">{value ?? 0}</p>
     </Card>
   );
 }
