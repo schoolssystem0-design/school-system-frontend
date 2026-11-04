@@ -68,9 +68,9 @@ export function PlatformOverview() {
         }
       />
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Schools" value={data.schools} icon={Building2} chip="bg-indigo-500/10 text-indigo-600 dark:text-indigo-300" />
+        <Stat label="Schools" value={data.schools} icon={Building2} chip="bg-primary/10 text-primary" />
         <Stat label="Active schools" value={data.activeSchools} icon={CheckCircle2} chip="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
-        <Stat label="User accounts" value={data.users} icon={Users} chip="bg-violet-500/10 text-violet-600 dark:text-violet-300" />
+        <Stat label="User accounts" value={data.users} icon={Users} chip="bg-highlight/15 text-highlight-ink" />
       </div>
       <Card>
         <CardContent className="p-0">

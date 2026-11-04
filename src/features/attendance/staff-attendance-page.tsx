@@ -116,7 +116,7 @@ function DaySheet({ day }: { day: StaffDay }) {
                   <TableCell>
                     <span className="font-medium">{r.name}</span>
                     <span className="block text-xs text-muted-foreground">{r.employeeNo} · {r.category === "TEACHER" ? "Teacher" : "Other staff"}</span>
-                    {r.onApprovedLeave && <span className="block text-xs text-violet-700">On approved leave</span>}
+                    {r.onApprovedLeave && <span className="block text-xs text-primary">On approved leave</span>}
                     {r.monthApproved && <Badge variant="secondary">Month approved</Badge>}
                   </TableCell>
                   <TableCell>

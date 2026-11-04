@@ -47,14 +47,11 @@ const onError = (e: unknown) => toast.error(errorMessage(e));
 
 /** Colour families used for icon chips and accents; one per kind of figure so the page scans quickly. */
 const TONE = {
-  indigo: { chip: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300", glow: "from-indigo-500/15", bar: "bg-indigo-500" },
-  sky: { chip: "bg-sky-500/10 text-sky-600 dark:text-sky-300", glow: "from-sky-500/15", bar: "bg-sky-500" },
-  emerald: { chip: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300", glow: "from-emerald-500/15", bar: "bg-emerald-500" },
-  amber: { chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300", glow: "from-amber-500/15", bar: "bg-amber-500" },
+  blue: { chip: "bg-primary/10 text-primary", glow: "from-primary/20", bar: "bg-primary" },
+  navy: { chip: "bg-navy/[0.07] text-navy dark:bg-white/10 dark:text-white", glow: "from-navy/10", bar: "bg-navy" },
+  orange: { chip: "bg-highlight/15 text-highlight-ink", glow: "from-highlight/25", bar: "bg-highlight" },
+  emerald: { chip: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", glow: "from-emerald-500/15", bar: "bg-emerald-600" },
   rose: { chip: "bg-rose-500/10 text-rose-600 dark:text-rose-300", glow: "from-rose-500/15", bar: "bg-rose-500" },
-  violet: { chip: "bg-violet-500/10 text-violet-600 dark:text-violet-300", glow: "from-violet-500/15", bar: "bg-violet-500" },
-  fuchsia: { chip: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-300", glow: "from-fuchsia-500/15", bar: "bg-fuchsia-500" },
-  teal: { chip: "bg-teal-500/10 text-teal-600 dark:text-teal-300", glow: "from-teal-500/15", bar: "bg-teal-500" },
   slate: { chip: "bg-slate-500/10 text-slate-600 dark:text-slate-300", glow: "from-slate-500/15", bar: "bg-slate-500" },
 } as const;
 type Tone = keyof typeof TONE;
@@ -107,20 +104,20 @@ function Urgent({ lines }: { lines: NonNullable<Dashboard["urgent"]> }) {
   return (
     <section
       aria-labelledby="urgent-title"
-      className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-4 sm:p-5 dark:border-amber-500/30 dark:from-amber-500/10 dark:via-orange-500/5 dark:to-rose-500/10"
+      className="relative overflow-hidden rounded-2xl border border-highlight/30 bg-gradient-to-br from-highlight/15 via-highlight/5 to-card p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md shadow-amber-500/30">
+        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-highlight text-highlight-foreground shadow-md shadow-highlight/30">
           <AlertTriangle className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 id="urgent-title" className="text-sm font-semibold text-amber-950 dark:text-amber-100">Needs action today</h2>
+          <h2 id="urgent-title" className="text-sm font-semibold text-foreground">Needs action today</h2>
           <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {lines.map((l) => (
               <li key={`${l.code}-${l.text}`}>
                 <Link
                   href={l.href ?? "/app"}
-                  className="group flex items-center gap-2 rounded-lg bg-white/70 px-3 py-2 text-sm text-amber-950 ring-1 ring-amber-200/70 transition hover:bg-white hover:ring-amber-300 dark:bg-white/5 dark:text-amber-50 dark:ring-amber-500/20 dark:hover:bg-white/10"
+                  className="group flex items-center gap-2 rounded-lg bg-card/80 px-3 py-2 text-sm text-foreground ring-1 ring-highlight/25 transition hover:bg-card hover:ring-highlight/60"
                 >
                   <span className="flex-1">{l.text}</span>
                   <ChevronRight className="size-4 shrink-0 opacity-50 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden />
@@ -272,15 +269,15 @@ function TotalsRow({ totals }: { totals: NonNullable<Dashboard["totals"]> }) {
   const boysShare = boys + girls === 0 ? 0 : Math.round((boys * 100) / (boys + girls));
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <Tile label="Students" value={String(totals.students)} detail={`${totals.boys} boys, ${totals.girls} girls`} href="/app/students" icon={GraduationCap} tone="indigo">
+      <Tile label="Students" value={String(totals.students)} detail={`${totals.boys} boys, ${totals.girls} girls`} href="/app/students" icon={GraduationCap} tone="blue">
         {boys + girls > 0 && (
-          <div aria-hidden className="relative mt-3 flex h-1.5 overflow-hidden rounded-full bg-pink-400/70">
-            <span className="h-full bg-sky-500" style={{ width: `${boysShare}%` }} />
+          <div aria-hidden className="relative mt-3 flex h-1.5 overflow-hidden rounded-full bg-highlight">
+            <span className="h-full bg-primary" style={{ width: `${boysShare}%` }} />
           </div>
         )}
       </Tile>
-      <Tile label="Families" value={String(totals.families)} href="/app/families" icon={Home} tone="teal" />
-      <Tile label="Staff" value={String(totals.staff)} href="/app/staff" icon={Contact} tone="violet" />
+      <Tile label="Families" value={String(totals.families)} href="/app/families" icon={Home} tone="orange" />
+      <Tile label="Staff" value={String(totals.staff)} href="/app/staff" icon={Contact} tone="navy" />
     </div>
   );
 }
@@ -289,7 +286,7 @@ function FeesRow({ fees }: { fees: NonNullable<Dashboard["fees"]> }) {
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <Tile label="Fees collected today" value={formatMoney(fees.collectedToday)} href="/app/fees/reports" icon={Banknote} tone="emerald" />
-      <Tile label="Collected this month" value={formatMoney(fees.collectedThisMonth)} href="/app/fees/reports" icon={CalendarRange} tone="sky" />
+      <Tile label="Collected this month" value={formatMoney(fees.collectedThisMonth)} href="/app/fees/reports" icon={CalendarRange} tone="blue" />
       <Tile label="Fees outstanding" value={formatMoney(fees.outstanding)} href="/app/fees/defaulters" icon={AlarmClock} tone="rose" />
     </div>
   );
@@ -362,11 +359,11 @@ function AttendanceCard({ a }: { a: NonNullable<Dashboard["attendance"]> }) {
             aria-valuemax={100}
             className="h-2 overflow-hidden rounded-full bg-muted"
           >
-            <span className={cn("block h-full rounded-full transition-all", complete ? "bg-emerald-500" : "bg-amber-500")} style={{ width: `${progress}%` }} />
+            <span className={cn("block h-full rounded-full transition-all", complete ? "bg-emerald-600" : "bg-highlight")} style={{ width: `${progress}%` }} />
           </div>
         )}
         {(a.missing ?? []).length > 0 && (
-          <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-amber-900 dark:text-amber-200">
+          <p className="rounded-lg bg-highlight/10 px-3 py-2 text-highlight-ink">
             <span className="font-medium">Not entered:</span> {(a.missing ?? []).join(", ")}
           </p>
         )}
@@ -389,8 +386,8 @@ function AttendanceCard({ a }: { a: NonNullable<Dashboard["attendance"]> }) {
 const FIGURE_PARTS = [
   { key: "present", label: "present", dot: "bg-emerald-500" },
   { key: "absent", label: "absent", dot: "bg-rose-500" },
-  { key: "leave", label: "on leave", dot: "bg-sky-500" },
-  { key: "late", label: "late", dot: "bg-amber-500" },
+  { key: "leave", label: "on leave", dot: "bg-primary" },
+  { key: "late", label: "late", dot: "bg-highlight" },
 ] as const;
 
 /** One person group's day: the same sentence as before for screen readers, shown as four coloured counters. */
@@ -442,7 +439,7 @@ function WeekBars({ days }: { days: Schemas["DayFigure"][] }) {
             </span>
             <span
               aria-hidden
-              className="block rounded-md bg-gradient-to-t from-indigo-500 to-violet-400 transition-all group-hover:from-indigo-600 group-hover:to-fuchsia-400"
+              className="block rounded-md bg-gradient-to-t from-primary to-primary/55 transition-all group-hover:to-primary/80"
               style={{ height: `${Math.max(r.percent, 3)}%` }}
             />
           </li>
@@ -457,13 +454,13 @@ function WeekBars({ days }: { days: Schemas["DayFigure"][] }) {
 
 function TasksCard({ tasks }: { tasks: NonNullable<Dashboard["tasks"]> }) {
   return (
-    <Panel title="My tasks" href="/app/office/tasks" icon={ClipboardPen} tone="indigo">
+    <Panel title="My tasks" href="/app/office/tasks" icon={ClipboardPen} tone="blue">
       {tasks.length === 0 ? <Nothing text="No open tasks." /> : (
         <ul className="flex flex-col divide-y text-sm">
           {tasks.map((t) => (
             <li key={t.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
               <span className="flex min-w-0 items-start gap-2">
-                <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", t.priority === "URGENT" ? "bg-rose-500" : t.overdue ? "bg-amber-500" : "bg-indigo-400")} />
+                <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", t.priority === "URGENT" ? "bg-rose-500" : t.overdue ? "bg-highlight" : "bg-primary/60")} />
                 <span>
                   {t.description}
                   {t.priority === "URGENT" && (
@@ -486,12 +483,12 @@ function TasksCard({ tasks }: { tasks: NonNullable<Dashboard["tasks"]> }) {
 
 function ComplaintsCard({ c }: { c: NonNullable<Dashboard["complaints"]> }) {
   const stats: [string, number | undefined, string][] = [
-    ["Open", c.open, "bg-amber-500/10 text-amber-800 dark:text-amber-200"],
+    ["Open", c.open, "bg-highlight/15 text-highlight-ink"],
     ["Closed", c.closed, "bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"],
     ["Total", c.total, "bg-muted text-foreground"],
   ];
   return (
-    <Panel title="Parent complaints" href="/app/office/complaints" icon={MessageSquareWarning} tone="amber">
+    <Panel title="Parent complaints" href="/app/office/complaints" icon={MessageSquareWarning} tone="orange">
       <dl className="grid grid-cols-3 gap-2 text-center">
         {stats.map(([k, v, style]) => (
           <div key={k} className={cn("flex flex-col-reverse rounded-xl px-2 py-3", style)}>
@@ -522,7 +519,7 @@ function RegisterCard({ rows }: { rows: NonNullable<Dashboard["register"]> }) {
     onError,
   });
   return (
-    <Panel title="Recent admissions and withdrawals" href="/app/students" icon={UserPlus} tone="sky">
+    <Panel title="Recent admissions and withdrawals" href="/app/students" icon={UserPlus} tone="blue">
       {rows.length === 0 ? <Nothing text="None this year." /> : (
         <ul className="flex flex-col divide-y text-sm">
           {rows.map((r) => (
@@ -532,7 +529,7 @@ function RegisterCard({ rows }: { rows: NonNullable<Dashboard["register"]> }) {
                   aria-hidden
                   className={cn(
                     "flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
-                    r.kind === "LEFT" ? "bg-slate-500/10 text-slate-600 dark:text-slate-300" : "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+                    r.kind === "LEFT" ? "bg-slate-500/10 text-slate-600 dark:text-slate-300" : "bg-primary/10 text-primary",
                   )}
                 >
                   {initials(r.name)}
@@ -561,19 +558,19 @@ function RegisterCard({ rows }: { rows: NonNullable<Dashboard["register"]> }) {
 
 function BirthdaysCard({ rows }: { rows: NonNullable<Dashboard["birthdays"]> }) {
   return (
-    <Panel title="Birthdays this week" href="/app/office/birthdays" icon={Cake} tone="fuchsia">
+    <Panel title="Birthdays this week" href="/app/office/birthdays" icon={Cake} tone="orange">
       {rows.length === 0 ? <Nothing text="No birthdays in the next 7 days." /> : (
         <ul className="flex flex-col gap-2 text-sm">
           {rows.map((b) => {
             const photo = fileUrl(b.photoFileId);
             return (
-              <li key={`${b.personType}-${b.id}`} className={cn("flex items-center gap-3 rounded-xl px-2 py-1.5", b.daysLeft === 0 && "bg-fuchsia-500/10")}>
+              <li key={`${b.personType}-${b.id}`} className={cn("flex items-center gap-3 rounded-xl px-2 py-1.5", b.daysLeft === 0 && "bg-highlight/10")}>
                 {photo ? (
                   // Served by the API with the session cookie; next/image cannot fetch it
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo} alt="" className="size-9 rounded-full object-cover ring-2 ring-fuchsia-200 dark:ring-fuchsia-500/30" />
+                  <img src={photo} alt="" className="size-9 rounded-full object-cover ring-2 ring-highlight/40" />
                 ) : (
-                  <span aria-hidden className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-400 to-pink-500 text-[11px] font-semibold text-white">
+                  <span aria-hidden className="flex size-9 items-center justify-center rounded-full bg-highlight text-[11px] font-semibold text-highlight-foreground">
                     {initials(b.name)}
                   </span>
                 )}
@@ -583,7 +580,7 @@ function BirthdaysCard({ rows }: { rows: NonNullable<Dashboard["birthdays"]> }) 
                 <span
                   className={cn(
                     "whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium",
-                    b.daysLeft === 0 ? "bg-fuchsia-500 text-white" : "bg-muted text-muted-foreground",
+                    b.daysLeft === 0 ? "bg-highlight text-highlight-foreground" : "bg-muted text-muted-foreground",
                   )}
                 >
                   {b.daysLeft === 0 ? "Today" : `${b.daysLeft}d`}
@@ -613,12 +610,12 @@ function DateLeaf({ date, tone }: { date?: string; tone: Tone }) {
 
 function EventsCard({ rows }: { rows: NonNullable<Dashboard["events"]> }) {
   return (
-    <Panel title="Coming up" href="/app/office/calendar" linkLabel="Calendar" icon={CalendarDays} tone="violet">
+    <Panel title="Coming up" href="/app/office/calendar" linkLabel="Calendar" icon={CalendarDays} tone="navy">
       {rows.length === 0 ? <Nothing text="No events coming up." /> : (
         <ul className="flex flex-col gap-2.5 text-sm">
           {rows.map((e) => (
             <li key={e.id} className="flex items-center gap-3">
-              <DateLeaf date={e.dateFrom} tone="violet" />
+              <DateLeaf date={e.dateFrom} tone="navy" />
               <span className="min-w-0 flex-1 font-medium">{e.title}</span>
               <span className="whitespace-nowrap text-xs text-muted-foreground">{formatDate(e.dateFrom)}</span>
             </li>
@@ -631,13 +628,13 @@ function EventsCard({ rows }: { rows: NonNullable<Dashboard["events"]> }) {
 
 function CircularsCard({ rows }: { rows: NonNullable<Dashboard["circulars"]> }) {
   return (
-    <Panel title="Latest circulars" href="/app/office/circulars" icon={Megaphone} tone="sky">
+    <Panel title="Latest circulars" href="/app/office/circulars" icon={Megaphone} tone="blue">
       {rows.length === 0 ? <Nothing text="No circulars yet." /> : (
         <ul className="flex flex-col divide-y text-sm">
           {rows.map((c) => (
             <li key={c.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
               <span className="flex min-w-0 items-start gap-2">
-                <Megaphone className="mt-0.5 size-3.5 shrink-0 text-sky-500" aria-hidden />
+                <Megaphone className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
                 <span className="font-medium">{c.title}</span>
               </span>
               <span className="whitespace-nowrap text-xs text-muted-foreground">{formatDate(c.date)}</span>
@@ -664,7 +661,7 @@ function LoginsCard({ l }: { l: NonNullable<Dashboard["logins"]> }) {
                   <span className="font-semibold tabular-nums">{g.logins}</span>
                 </div>
                 <div aria-hidden className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                  <span className="block h-full rounded-full bg-gradient-to-r from-indigo-500 to-sky-400" style={{ width: `${((g.logins ?? 0) * 100) / max}%` }} />
+                  <span className="block h-full rounded-full bg-primary" style={{ width: `${((g.logins ?? 0) * 100) / max}%` }} />
                 </div>
               </li>
             ))}
@@ -676,7 +673,7 @@ function LoginsCard({ l }: { l: NonNullable<Dashboard["logins"]> }) {
           </p>
         )}
         {(l.newLocations ?? []).map((a) => (
-          <p key={`${a.username}-${a.at}`} className="flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-3 py-2 font-medium text-amber-800 dark:text-amber-200">
+          <p key={`${a.username}-${a.at}`} className="flex items-start gap-1.5 rounded-lg bg-highlight/10 px-3 py-2 font-medium text-highlight-ink">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> New location: {a.username}, {formatDateTime(a.at)}
           </p>
         ))}
@@ -687,7 +684,7 @@ function LoginsCard({ l }: { l: NonNullable<Dashboard["logins"]> }) {
 
 function VisitorsCard({ n }: { n: number }) {
   return (
-    <Panel title="Visitors today" href="/app/office/visitors" linkLabel="Log" icon={DoorOpen} tone="teal">
+    <Panel title="Visitors today" href="/app/office/visitors" linkLabel="Log" icon={DoorOpen} tone="orange">
       <div className="flex items-end gap-2">
         <p className="text-4xl font-bold tracking-tight tabular-nums">{n}</p>
         <p className="pb-1.5 text-sm text-muted-foreground">{n === 1 ? "visitor signed in" : "visitors signed in"}</p>

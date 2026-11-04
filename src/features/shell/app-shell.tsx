@@ -240,12 +240,12 @@ function SidebarContent({ me, pathname, onNavigate }: { me: Me; pathname: string
   return (
     <>
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-md shadow-indigo-500/25">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/40">
           <School className="size-5" aria-hidden />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold leading-tight text-foreground">{me.school?.name}</p>
-          <p className="text-xs text-muted-foreground">School portal</p>
+          <p className="truncate text-sm font-semibold leading-tight text-white">{me.school?.name}</p>
+          <p className="text-xs text-sidebar-foreground/60">School portal</p>
         </div>
       </div>
       <nav aria-label="Main" className="scrollbar-thin flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
@@ -255,7 +255,7 @@ function SidebarContent({ me, pathname, onNavigate }: { me: Me; pathname: string
           return (
             <div key={group.title ?? index}>
               {group.title && (
-                <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+                <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
                   {group.title}
                 </p>
               )}
@@ -268,14 +268,14 @@ function SidebarContent({ me, pathname, onNavigate }: { me: Me; pathname: string
                         href={href}
                         onClick={onNavigate}
                         aria-current={active ? "page" : undefined}
-                        className="group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground aria-[current=page]:bg-primary/10 aria-[current=page]:font-medium aria-[current=page]:text-primary md:py-1.5"
+                        className="group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground aria-[current=page]:bg-primary aria-[current=page]:font-medium aria-[current=page]:text-white aria-[current=page]:shadow-md aria-[current=page]:shadow-primary/30 md:py-1.5"
                       >
                         <span
                           aria-hidden
-                          className="absolute inset-y-1.5 left-0 w-1 rounded-r-full bg-primary opacity-0 transition-opacity group-aria-[current=page]:opacity-100"
+                          className="absolute inset-y-1.5 left-0 w-1 rounded-r-full bg-highlight opacity-0 transition-opacity group-aria-[current=page]:opacity-100"
                         />
                         <Icon
-                          className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground group-aria-[current=page]:text-primary"
+                          className="size-4 shrink-0 text-sidebar-foreground/60 transition-colors group-hover:text-white group-aria-[current=page]:text-white"
                           aria-hidden
                         />
                         <span className="truncate">{label}</span>
@@ -311,14 +311,14 @@ function MobileDrawer({ me, pathname, onClose }: { me: Me; pathname: string; onC
         type="button"
         aria-label="Close menu"
         tabIndex={-1}
-        className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm animate-in fade-in-0"
+        className="absolute inset-0 bg-navy/60 backdrop-blur-sm animate-in fade-in-0"
         onClick={onClose}
       />
       <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-sidebar shadow-2xl animate-in slide-in-from-left duration-200">
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-3 z-10"
+          className="absolute top-4 right-3 z-10 text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
           onClick={onClose}
           aria-label="Close menu"
           autoFocus
@@ -390,7 +390,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
             <YearSwitcher />
           </div>
           {selected?.status === "CLOSED" && (
-            <span className="hidden items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-900 lg:flex dark:bg-amber-500/15 dark:text-amber-200">
+            <span className="hidden items-center gap-1.5 rounded-full bg-highlight/15 px-3 py-1 text-xs font-medium text-highlight-ink lg:flex">
               <Lock className="size-3.5" aria-hidden />
               Closed year: read-only except authorised corrections
             </span>
@@ -402,7 +402,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
             <div className="flex items-center gap-2.5">
               <span
                 aria-hidden
-                className="hidden size-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 text-xs font-semibold text-white ring-2 ring-background sm:flex"
+                className="hidden size-9 items-center justify-center rounded-full bg-highlight text-xs font-semibold text-highlight-foreground ring-2 ring-background sm:flex"
               >
                 {initials(me.displayName)}
               </span>
@@ -425,7 +425,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
           </div>
         </div>
         {selected?.status === "CLOSED" && (
-          <p className="flex items-center gap-1.5 border-t bg-amber-50 px-4 py-1.5 text-xs font-medium text-amber-900 lg:hidden dark:bg-amber-500/10 dark:text-amber-200">
+          <p className="flex items-center gap-1.5 border-t bg-highlight/10 px-4 py-1.5 text-xs font-medium text-highlight-ink lg:hidden">
             <Lock className="size-3.5 shrink-0" aria-hidden />
             Closed year: read-only except authorised corrections
           </p>
@@ -449,7 +449,7 @@ function SuperAdminBanner({ schoolName }: { schoolName: string }) {
   });
   return (
     <div
-      className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-indigo-700 via-violet-700 to-fuchsia-700 px-4 py-2 text-sm text-white sm:px-6 print:hidden"
+      className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-highlight bg-navy px-4 py-2 text-sm text-white sm:px-6 print:hidden"
       role="status"
     >
       <span className="flex min-w-0 items-center gap-2">
@@ -458,7 +458,7 @@ function SuperAdminBanner({ schoolName }: { schoolName: string }) {
           Super admin: viewing <strong>{schoolName}</strong> with full access. Every action is recorded.
         </span>
       </span>
-      <Button size="sm" variant="secondary" onClick={() => leave.mutate()} disabled={leave.isPending}>
+      <Button size="sm" className="bg-highlight text-highlight-foreground hover:bg-highlight/90" onClick={() => leave.mutate()} disabled={leave.isPending}>
         Back to platform
       </Button>
     </div>

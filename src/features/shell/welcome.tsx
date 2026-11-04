@@ -74,17 +74,17 @@ export function Welcome() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-6 text-white shadow-lg shadow-indigo-500/20 sm:px-8 sm:py-8">
-        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 -z-10 size-64 rounded-full bg-white/10 blur-2xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/3 -z-10 size-72 rounded-full bg-fuchsia-300/20 blur-3xl" />
-        <div
+      <section className="relative isolate overflow-hidden rounded-2xl bg-navy px-5 py-6 text-white shadow-lg shadow-navy/20 sm:px-8 sm:py-8">
+        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 -z-10 size-72 rounded-full bg-primary/50 blur-3xl" />
+                <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 opacity-[0.08] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:18px_18px]"
         />
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
+            <span aria-hidden className="mb-3 block h-1 w-10 rounded-full bg-highlight" />
             <p className="flex items-center gap-1.5 text-sm font-medium text-white/80">
-              <Sparkles className="size-4" aria-hidden /> {greeting} · {today}
+              <Sparkles className="size-4 text-highlight" aria-hidden /> {greeting} · {today}
             </p>
             <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">Welcome, {me.data.displayName}</h1>
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium">
@@ -98,7 +98,7 @@ export function Welcome() {
               )}
             </div>
           </div>
-          <span aria-hidden className="hidden size-20 shrink-0 items-center justify-center rounded-3xl bg-white/15 ring-1 ring-white/25 backdrop-blur sm:flex">
+          <span aria-hidden className="hidden size-20 shrink-0 items-center justify-center rounded-3xl bg-primary shadow-xl shadow-primary/40 ring-1 ring-white/20 sm:flex">
             <School className="size-10" />
           </span>
         </div>
@@ -121,7 +121,7 @@ export function Welcome() {
                   aria-valuemax={100}
                   className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
                 >
-                  <span className="block h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all" style={{ width: `${progress}%` }} />
+                  <span className="block h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
                 </div>
                 <span className="text-xs font-medium text-muted-foreground tabular-nums">
                   {doneCount}/{steps.length}
@@ -133,7 +133,7 @@ export function Welcome() {
             {steps.map((step, i) => (
               <li key={step.href} className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted">
                 {step.done ? (
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white" role="img" aria-label="Done">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white" role="img" aria-label="Done">
                     <Check className="size-3.5" aria-hidden />
                   </span>
                 ) : (

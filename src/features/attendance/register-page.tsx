@@ -27,8 +27,8 @@ const STATUS_STYLE: Record<string, string> = {
   P: "bg-emerald-600 text-white",
   A: "bg-red-600 text-white",
   L: "bg-amber-500 text-white",
-  HD: "bg-sky-600 text-white",
-  LV: "bg-violet-600 text-white",
+  HD: "bg-primary text-white",
+  LV: "bg-navy text-white",
 };
 
 /** Daily class register (FR 13.1–13.3), missing registers (FR 13.2) and repeated absences (FR 13.6). */
@@ -146,7 +146,7 @@ function RegisterGrid({ register }: { register: Register }) {
                   <TableCell>{r.rollNo ?? "—"}</TableCell>
                   <TableCell>
                     <span className="font-medium">{r.name}</span> <span className="text-xs text-muted-foreground">GR {r.grNo}</span>
-                    {r.onApprovedLeave && <span className="block text-xs text-violet-700">On approved leave</span>}
+                    {r.onApprovedLeave && <span className="block text-xs text-primary">On approved leave</span>}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1" role="radiogroup" aria-label={`Attendance for ${r.name}`}>

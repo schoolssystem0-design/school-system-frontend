@@ -415,7 +415,7 @@ const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const EVENT_STYLE: Record<string, string> = {
-  EVENT: "bg-sky-100 text-sky-900",
+  EVENT: "bg-primary/10 text-primary",
   HOLIDAY: "bg-emerald-100 text-emerald-900",
   EXAM: "bg-amber-100 text-amber-900",
   OTHER: "bg-muted text-foreground",

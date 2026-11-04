@@ -63,10 +63,10 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="sticky top-0 z-30 bg-gradient-to-r from-slate-950 via-indigo-950 to-violet-950 text-white shadow-lg shadow-indigo-950/20 print:hidden">
+      <header className="sticky top-0 z-30 border-b-2 border-highlight bg-navy text-white shadow-lg shadow-navy/20 print:hidden">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
           <span className="flex items-center gap-2.5 font-semibold">
-            <span aria-hidden className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-fuchsia-500 shadow-md shadow-fuchsia-500/30">
+            <span aria-hidden className="flex size-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/40">
               <ShieldCheck className="size-5" />
             </span>
             <span className="leading-tight">
@@ -85,7 +85,7 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
                   key={href}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white aria-[current=page]:bg-white aria-[current=page]:font-medium aria-[current=page]:text-indigo-950"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white aria-[current=page]:bg-primary aria-[current=page]:font-medium aria-[current=page]:text-white"
                 >
                   <Icon className="size-4" aria-hidden />
                   {label}
@@ -94,11 +94,11 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="ms-auto flex items-center gap-3 text-sm lg:ms-0">
-            <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-white/15 text-xs font-semibold ring-1 ring-white/25">
+            <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-highlight text-xs font-semibold text-highlight-foreground">
               {(me.data.name ?? "?").trim().slice(0, 1).toUpperCase()}
             </span>
             <span className="hidden max-w-40 truncate sm:inline">{me.data.name}</span>
-            <Button size="sm" variant="secondary" className="rounded-full" onClick={() => signOut.mutate()} aria-label="Sign out">
+            <Button size="sm" variant="secondary" className="rounded-full bg-white/10 text-white hover:bg-white/20" onClick={() => signOut.mutate()} aria-label="Sign out">
               <LogOut aria-hidden /> <span className="hidden sm:inline">Sign out</span>
             </Button>
           </div>

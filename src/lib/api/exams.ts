@@ -21,7 +21,7 @@ export type StudentResult = Schemas["StudentResult"];
 
 export const RESULT_STATUS: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Draft", className: "bg-muted text-foreground" },
-  REVIEWED: { label: "Reviewed", className: "bg-sky-100 text-sky-900" },
+  REVIEWED: { label: "Reviewed", className: "bg-primary/10 text-primary" },
   PUBLISHED: { label: "Published", className: "bg-emerald-100 text-emerald-900" },
 };
 
