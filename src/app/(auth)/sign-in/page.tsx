@@ -15,6 +15,7 @@ export default function SignInPage() {
             <h1 className="text-xl font-semibold">Sign in</h1>
           </CardTitle>
           <CardDescription>Use the school code given by your administrator.</CardDescription>
+          {/* <CardDescription>Use the school code given by your administrator.</CardDescription> */}
         </CardHeader>
         <CardContent>
           <Suspense>
