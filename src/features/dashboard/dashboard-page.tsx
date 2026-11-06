@@ -41,6 +41,7 @@ import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useCan } from "@/features/people/shared";
+import { SmsPhoneCard } from "@/features/office/sms-phone";
 import { initials, navItems, useMe } from "@/features/shell/app-shell";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
@@ -66,6 +67,7 @@ function IconChip({ icon: Icon, tone, className }: { icon: LucideIcon; tone: Ton
 
 /** The dashboard panels (FR 3). The API sends only the panels this user may see. */
 export function DashboardPanels() {
+  const can = useCan();
   const [reveal, setReveal] = useState(false);
   const data = useQuery({ queryKey: ["dashboard", reveal], queryFn: () => dashboard.get(reveal) });
   if (data.isPending) return <Loading />;
@@ -95,6 +97,7 @@ export function DashboardPanels() {
         {d.circulars && <CircularsCard rows={d.circulars} />}
         {d.logins && <LoginsCard l={d.logins} />}
         {d.visitorsToday != null && <VisitorsCard n={d.visitorsToday} />}
+        {can(P.MESSAGES_VIEW) && <SmsPhoneCard />}
       </div>
     </div>
   );

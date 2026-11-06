@@ -1364,6 +1364,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/communication/sms-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["phoneStatus"];
+        put: operations["connectPhone"];
+        post?: never;
+        delete: operations["disconnectPhone"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/communication/sms-phone/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["testPhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/communication/sms-phone/webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registerPhoneWebhooks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/communication/templates": {
         parameters: {
             query?: never;
@@ -3492,6 +3540,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/sms-gate/webhook/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/class": {
         parameters: {
             query?: never;
@@ -4414,6 +4478,22 @@ export interface paths {
         get?: never;
         put: operations["save"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/test-marks/{id}/sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendMarks"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5682,6 +5762,15 @@ export interface components {
         ExperienceCertificateRequest: {
             remarks?: string;
         };
+        FailedLine: {
+            /** Format: date-time */
+            createdAt?: string;
+            error?: string;
+            /** Format: int64 */
+            id?: number;
+            purpose?: string;
+            recipient?: string;
+        };
         FamilyBulkItem: {
             /** Format: int64 */
             familyId: number;
@@ -5700,6 +5789,7 @@ export interface components {
             fatherName?: string;
             fatherPhone?: string;
             fatherProfession?: string;
+            messageLanguage?: string;
             motherCnic?: string;
             motherName?: string;
             motherPhone?: string;
@@ -5725,6 +5815,7 @@ export interface components {
             fatherName?: string;
             fatherPhone?: string;
             fatherProfession?: string;
+            messageLanguage?: string;
             motherCnic?: string;
             motherName?: string;
             motherPhone?: string;
@@ -6202,6 +6293,7 @@ export interface components {
             fatherName?: string;
             fatherPhone?: string;
             fatherProfession?: string;
+            messageLanguage?: string;
             motherCnic?: string;
             motherName?: string;
             motherPhone?: string;
@@ -6587,6 +6679,53 @@ export interface components {
             /** Format: int32 */
             weekday?: number;
         };
+        PhoneRequest: {
+            alertEmail?: string;
+            baseUrl?: string;
+            enabled?: boolean;
+            password?: string;
+            signingKey?: string;
+            /** Format: int32 */
+            simNumber?: number;
+            username: string;
+        };
+        PhoneStatus: {
+            alert?: boolean;
+            alertEmail?: string;
+            baseUrl?: string;
+            /** Format: int32 */
+            batteryLevel?: number;
+            charging?: boolean;
+            configured?: boolean;
+            /** Format: date-time */
+            connectedAt?: string;
+            connectedBy?: string;
+            /** Format: int32 */
+            dailyLimit?: number;
+            defaultBaseUrl?: string;
+            enabled?: boolean;
+            failed?: components["schemas"]["FailedLine"][];
+            /** Format: int32 */
+            handedOverToday?: number;
+            /** Format: date-time */
+            lastRefusedAt?: string;
+            lastRefusedReason?: string;
+            /** Format: date-time */
+            lastSeenAt?: string;
+            notice?: string;
+            online?: boolean;
+            secretsAvailable?: boolean;
+            /** Format: int32 */
+            simNumber?: number;
+            today?: {
+                [key: string]: number;
+            };
+            username?: string;
+            /** Format: int32 */
+            waiting?: number;
+            webhookUrl?: string;
+            webhooksRegistered?: boolean;
+        };
         PlannedLine: {
             description?: string;
             discount?: string;
@@ -6714,6 +6853,8 @@ export interface components {
             channel?: string;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: date-time */
+            deliveredAt?: string;
             /** Format: int64 */
             id?: number;
             lastError?: string;
@@ -6725,6 +6866,7 @@ export interface components {
             sourceId?: number;
             sourceType?: string;
             status?: string;
+            viaPhone?: boolean;
         };
         ReadmitRequest: {
             /** Format: date */
@@ -7223,6 +7365,13 @@ export interface components {
             role: string;
             title?: string;
         };
+        SmsTestRequest: {
+            phone: string;
+        };
+        SmsTestResult: {
+            /** Format: int64 */
+            messageId?: number;
+        };
         StaffDay: {
             /** Format: date */
             date?: string;
@@ -7710,6 +7859,7 @@ export interface components {
             customised?: boolean;
             defaultBody?: string;
             label?: string;
+            language?: string;
             /** Format: int32 */
             parts?: number;
             placeholders?: string[];
@@ -7741,6 +7891,16 @@ export interface components {
         TestMarksRequest: {
             marks: components["schemas"]["TestMarkRequest"][];
             reason?: string;
+        };
+        TestMarksSmsReport: {
+            /** Format: int32 */
+            alreadySent?: number;
+            /** Format: int32 */
+            noMarks?: number;
+            /** Format: int32 */
+            noPhone?: number;
+            /** Format: int32 */
+            queued?: number;
         };
         TestRequest: {
             obtained?: number;
@@ -10466,6 +10626,112 @@ export interface operations {
             };
         };
     };
+    phoneStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PhoneStatus"];
+                };
+            };
+        };
+    };
+    connectPhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhoneRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PhoneStatus"];
+                };
+            };
+        };
+    };
+    disconnectPhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    testPhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsTestRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsTestResult"];
+                };
+            };
+        };
+    };
+    registerPhoneWebhooks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PhoneStatus"];
+                };
+            };
+        };
+    };
     templates: {
         parameters: {
             query?: never;
@@ -10488,7 +10754,9 @@ export interface operations {
     };
     saveTemplate: {
         parameters: {
-            query?: never;
+            query?: {
+                language?: string;
+            };
             header?: never;
             path: {
                 code: string;
@@ -10514,7 +10782,9 @@ export interface operations {
     };
     resetTemplate: {
         parameters: {
-            query?: never;
+            query?: {
+                language?: string;
+            };
             header?: never;
             path: {
                 code: string;
@@ -14231,6 +14501,33 @@ export interface operations {
             };
         };
     };
+    receive: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Signature"?: string;
+                "X-Timestamp"?: string;
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     classReport: {
         parameters: {
             query: {
@@ -15982,6 +16279,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TestSheet"];
+                };
+            };
+        };
+    };
+    sendMarks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TestMarksSmsReport"];
                 };
             };
         };

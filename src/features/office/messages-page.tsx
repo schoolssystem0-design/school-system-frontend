@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Empty, ErrorState, Loading } from "@/components/app/data-state";
@@ -19,26 +20,33 @@ import { messages, type MessageRequest, type Template } from "@/lib/api/office";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { ClassSelect, SectionSelect, useCan } from "@/features/people/shared";
+import { SMS_STATES, SmsPhonePanel } from "./sms-phone";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 
-const STATUS_LABEL: Record<string, string> = { PENDING: "Waiting", SENT: "Sent", FAILED: "Failed" };
+const STATUS_LABEL: Record<string, string> = Object.fromEntries(SMS_STATES.map((s) => [s.key, s.label]));
+const STATUS_TONE: Record<string, string> = Object.fromEntries(SMS_STATES.map((s) => [s.key, s.tone]));
+const LANGUAGE_LABEL: Record<string, string> = { EN: "English", UR: "Roman Urdu" };
 
 /** Messages to families, enquiries and staff, the delivery log and template wording (FR 8.6, 4.3). */
 export function MessagesPage() {
   const can = useCan();
+  const requested = useSearchParams().get("tab");
+  const tabs = [...(can(P.MESSAGES_SEND) ? ["send"] : []), "log", "templates", "phone"];
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Messages" description="SMS to families, enquiries and staff. You see who gets it and the cost before sending." />
-      <Tabs defaultValue={can(P.MESSAGES_SEND) ? "send" : "log"}>
+      <Tabs defaultValue={requested && tabs.includes(requested) ? requested : tabs[0]}>
         <TabsList>
           {can(P.MESSAGES_SEND) && <TabsTrigger value="send">Send a message</TabsTrigger>}
           <TabsTrigger value="log">Delivery log</TabsTrigger>
           <TabsTrigger value="templates">Automatic messages</TabsTrigger>
+          <TabsTrigger value="phone">SMS phone</TabsTrigger>
         </TabsList>
         <TabsContent value="send" className="mt-4"><SendPanel /></TabsContent>
         <TabsContent value="log" className="mt-4"><LogPanel /></TabsContent>
         <TabsContent value="templates" className="mt-4"><TemplatesPanel /></TabsContent>
+        <TabsContent value="phone" className="mt-4"><SmsPhonePanel /></TabsContent>
       </Tabs>
     </div>
   );
@@ -165,9 +173,7 @@ function LogPanel() {
       <Field id="lg-status" label="Show" className="max-w-xs">
         <NativeSelect id="lg-status" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All</option>
-          <option value="PENDING">Waiting</option>
-          <option value="SENT">Sent</option>
-          <option value="FAILED">Failed</option>
+          {SMS_STATES.map((st) => <option key={st.key} value={st.key}>{st.label}</option>)}
         </NativeSelect>
       </Field>
       {(log.data.messages ?? []).length === 0 ? <Empty title="No messages" /> : (
@@ -188,8 +194,13 @@ function LogPanel() {
                 <TableCell>{m.recipient}</TableCell>
                 <TableCell className="text-sm">{m.body}</TableCell>
                 <TableCell>
-                  {STATUS_LABEL[m.status ?? ""] ?? m.status}
-                  {m.lastError && m.status !== "SENT" && <span className="block text-xs text-muted-foreground">{m.lastError}</span>}
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_TONE[m.status ?? ""] ?? "bg-muted"}`}>
+                    {STATUS_LABEL[m.status ?? ""] ?? m.status}
+                  </span>
+                  {m.viaPhone && <span className="block text-xs text-muted-foreground">School phone</span>}
+                  {m.lastError && m.status !== "SENT" && m.status !== "DELIVERED" && (
+                    <span className="block text-xs text-muted-foreground">{m.lastError}</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   {m.status === "FAILED" && can(P.MESSAGES_SEND) && (
@@ -206,12 +217,34 @@ function LogPanel() {
 }
 
 function TemplatesPanel() {
+  const [language, setLanguage] = useState("EN");
   const list = useQuery({ queryKey: ["messages", "templates"], queryFn: messages.templates });
   if (list.isPending) return <Loading />;
   if (list.isError) return <ErrorState error={list.error} onRetry={() => list.refetch()} />;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      {list.data.map((t) => <TemplateCard key={`${t.code}-${t.body}`} template={t} />)}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <div role="radiogroup" aria-label="Language" className="inline-flex rounded-full border bg-card p-1">
+          {Object.entries(LANGUAGE_LABEL).map(([code, label]) => (
+            <button
+              key={code}
+              type="button"
+              role="radio"
+              aria-checked={language === code}
+              onClick={() => setLanguage(code)}
+              className="rounded-full px-3.5 py-1 text-sm font-medium text-muted-foreground transition-colors aria-checked:bg-primary aria-checked:text-primary-foreground"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground">Each family gets messages in the language chosen on its family record.</p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {list.data
+          .filter((t) => (t.language ?? "EN") === language)
+          .map((t) => <TemplateCard key={`${t.code}-${t.language}-${t.body}`} template={t} />)}
+      </div>
     </div>
   );
 }
@@ -224,15 +257,18 @@ function TemplateCard({ template }: { template: Template }) {
     void queryClient.invalidateQueries({ queryKey: ["messages", "templates"] });
     toast.success("Template saved");
   };
-  const save = useMutation({ mutationFn: () => messages.saveTemplate(template.code ?? "", body), onSuccess: done, onError });
-  const reset = useMutation({ mutationFn: () => messages.resetTemplate(template.code ?? ""), onSuccess: done, onError });
+  const save = useMutation({ mutationFn: () => messages.saveTemplate(template.code ?? "", body, template.language), onSuccess: done, onError });
+  const reset = useMutation({ mutationFn: () => messages.resetTemplate(template.code ?? "", template.language), onSuccess: done, onError });
   const editable = can(P.MESSAGES_TEMPLATES_MANAGE);
-  const id = `tp-${template.code}`;
+  const id = `tp-${template.code}-${template.language}`;
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{template.label}</CardTitle>
-        <CardDescription>You can use: {(template.placeholders ?? []).map((p) => `{${p}}`).join(", ")}</CardDescription>
+        <CardDescription>
+          You can use: {(template.placeholders ?? []).map((p) => `{${p}}`).join(", ")}. About {template.parts ?? 1} SMS{" "}
+          {template.parts === 1 ? "part" : "parts"} before names are filled in.
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <Field id={id} label="Wording">

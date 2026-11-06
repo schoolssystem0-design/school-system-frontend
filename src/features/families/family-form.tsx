@@ -19,6 +19,7 @@ export type FamilyFields = {
   emergencyName: string;
   emergencyPhone: string;
   preferredChannel: string;
+  messageLanguage: string;
   remarks: string;
 };
 
@@ -36,6 +37,7 @@ export function emptyFamily(): FamilyFields {
     emergencyName: "",
     emergencyPhone: "",
     preferredChannel: "SMS",
+    messageLanguage: "EN",
     remarks: "",
   };
 }
@@ -134,6 +136,12 @@ export function FamilyForm({
               <option value="SMS">SMS</option>
               <option value="WHATSAPP">WhatsApp</option>
               <option value="NONE">No messages</option>
+            </NativeSelect>
+          </Field>
+          <Field id={id("language")} label="Message language" hint="Roman Urdu is written in English letters, so it costs the same">
+            <NativeSelect id={id("language")} value={value.messageLanguage} onChange={set("messageLanguage")}>
+              <option value="EN">English</option>
+              <option value="UR">Roman Urdu</option>
             </NativeSelect>
           </Field>
           <Field id={id("remarks")} label="Remarks" className="sm:col-span-2">

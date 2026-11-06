@@ -14,5 +14,6 @@ export const testMarks = {
   remove: (id: number) => api<void>(`/test-marks/${id}`, { method: "DELETE" }),
   overall: (sectionId: number, from: string, to: string) =>
     api<Schemas["OverallRow"][]>(`/test-marks/overall?${new URLSearchParams({ sectionId: String(sectionId), from, to })}`),
+  sendToFamilies: (id: number) => api<Schemas["TestMarksSmsReport"]>(`/test-marks/${id}/sms`, { method: "POST", body: {} }),
   forStudent: (studentId: number) => api<Schemas["StudentTestRow"][]>(`/test-marks/students/${studentId}`),
 };

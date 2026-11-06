@@ -16,6 +16,8 @@ export type Complaint = Schemas["ComplaintView"];
 export type SchoolEvent = Schemas["EventView"];
 export type Template = Schemas["TemplateView"];
 export type MessageRequest = Schemas["MessageRequest"];
+export type PhoneStatus = Schemas["PhoneStatus"];
+export type PhoneRequest = Schemas["PhoneRequest"];
 
 export const EVENT_TYPES = [
   { value: "EVENT", label: "School event" },
@@ -74,6 +76,17 @@ export const messages = {
   log: (params: { purpose?: string; status?: string }) => api<Schemas["DeliveryLog"]>(`/communication/log?${query(params)}`),
   retry: (id: number) => api<void>(`/communication/messages/${id}/retry`, { method: "POST", body: {} }),
   templates: () => api<Template[]>("/communication/templates"),
-  saveTemplate: (code: string, body: string) => api<Template>(`/communication/templates/${code}`, { method: "PUT", body: { body } }),
-  resetTemplate: (code: string) => api<Template>(`/communication/templates/${code}`, { method: "DELETE" }),
+  saveTemplate: (code: string, body: string, language = "EN") =>
+    api<Template>(`/communication/templates/${code}?language=${language}`, { method: "PUT", body: { body } }),
+  resetTemplate: (code: string, language = "EN") =>
+    api<Template>(`/communication/templates/${code}?language=${language}`, { method: "DELETE" }),
+};
+
+/** The school's own SMS phone (SMS Gate app). Secrets go in, never come back out. */
+export const smsPhone = {
+  status: () => api<PhoneStatus>("/communication/sms-phone"),
+  connect: (body: PhoneRequest) => api<PhoneStatus>("/communication/sms-phone", { method: "PUT", body }),
+  registerWebhooks: () => api<PhoneStatus>("/communication/sms-phone/webhooks", { method: "POST", body: {} }),
+  disconnect: () => api<void>("/communication/sms-phone", { method: "DELETE" }),
+  test: (phone: string) => api<Schemas["SmsTestResult"]>("/communication/sms-phone/test", { method: "POST", body: { phone } }),
 };

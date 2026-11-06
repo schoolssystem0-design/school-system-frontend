@@ -208,6 +208,21 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
     },
     onError,
   });
+  const can = useCan();
+  const notify = useMutation({
+    mutationFn: () => testMarks.sendToFamilies(id),
+    onSuccess: (r) => {
+      void queryClient.invalidateQueries({ queryKey: ["messages"] });
+      const parts = [
+        `${r.queued} SMS queued`,
+        r.alreadySent ? `${r.alreadySent} already sent` : "",
+        r.noPhone ? `${r.noPhone} without a phone` : "",
+        r.noMarks ? `${r.noMarks} without marks` : "",
+      ].filter(Boolean);
+      toast.success(parts.join(", "));
+    },
+    onError,
+  });
   const editable = sheet.canEdit;
   const notEntered = rows.filter((r) => !entries[r.studentId ?? 0].absent && entries[r.studentId ?? 0].value.trim() === "").length;
   return (
@@ -217,6 +232,11 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
         description={`${test?.sectionLabel} · ${formatDate(test?.testDate)} · Out of ${test?.maxMarks}`}
         actions={
           <>
+            {can(P.MESSAGES_SEND) && (test?.entered ?? 0) > 0 && (
+              <Button variant="outline" disabled={notify.isPending} onClick={() => notify.mutate()}>
+                {notify.isPending ? "Sending…" : "Send marks to parents"}
+              </Button>
+            )}
             {editable && test?.entered === 0 && (
               <Button variant="outline" disabled={remove.isPending} onClick={() => remove.mutate()}>Delete test</Button>
             )}
