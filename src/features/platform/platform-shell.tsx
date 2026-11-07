@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { ApiError } from "@/lib/api/client";
+import { useIdleLogout } from "@/features/auth/use-idle-logout";
 import { logout } from "@/lib/api/auth";
 import { platform } from "@/lib/api/endpoints";
 
@@ -29,6 +30,11 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const me = usePlatformMe();
   const denied = me.error instanceof ApiError && (me.error.status === 401 || me.error.status === 403);
+
+  useIdleLogout({
+    enabled: Boolean(me.data),
+    signInPath: "/platform/sign-in",
+  });
 
   useEffect(() => {
     if (denied) router.replace("/platform/sign-in");

@@ -59,6 +59,7 @@ import { NativeSelect } from "@/components/app/native-select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { ApiError } from "@/lib/api/client";
+import { useIdleLogout } from "@/features/auth/use-idle-logout";
 import { fetchMe, logout, meQueryKey, type Me } from "@/lib/api/auth";
 import { platform } from "@/lib/api/endpoints";
 import { can, P, type Permission } from "@/lib/permissions";
@@ -181,6 +182,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const unauthenticated = me.error instanceof ApiError && me.error.status === 401;
   const needsPasswordChange = me.data?.mustChangePassword && pathname !== "/app/account";
   const superAdminOutsideSchool = me.data?.superAdmin && !me.data.school;
+
+  useIdleLogout({
+    enabled: Boolean(me.data?.school),
+    signInPath: me.data?.superAdmin ? "/platform/sign-in" : "/sign-in",
+  });
 
   useEffect(() => {
     if (unauthenticated) router.replace(`/sign-in?next=${encodeURIComponent(pathname)}`);

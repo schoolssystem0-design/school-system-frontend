@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Building2, CheckCircle2, Plus, Trash2, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Plus, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -221,7 +221,7 @@ export function NewSchoolPage() {
   );
 }
 
-/** One school: rename, suspend/reactivate (P-4), website domains (P-6), users and setup links (P-3). */
+/** One school: suspend/reactivate (P-4), users and setup links (P-3). */
 export function SchoolDetailPage() {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
@@ -229,8 +229,9 @@ export function SchoolDetailPage() {
   const detail = useQuery({ queryKey: ["platform", "school", id], queryFn: () => platform.school(id) });
   const users = useQuery({ queryKey: ["platform", "school", id, "users"], queryFn: () => platform.users(id) });
   const open = useOpenSchool();
+  const router = useRouter();
   const [suspending, setSuspending] = useState(false);
-  const [host, setHost] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [link, setLink] = useState<Schemas["SetupLink"] | null>(null);
   const update = (s: Schemas["SchoolView"]) => {
     queryClient.setQueryData(["platform", "school", id], s);
@@ -247,15 +248,16 @@ export function SchoolDetailPage() {
     onError,
   });
   const reactivate = useMutation({ mutationFn: () => platform.reactivate(id), onSuccess: update, onError });
-  const addDomain = useMutation({
-    mutationFn: () => platform.addDomain(id, host),
-    onSuccess: (s) => {
-      update(s);
-      setHost("");
+  const deleteSchool = useMutation({
+    mutationFn: ({ reason, confirmCode }: { reason: string; confirmCode: string }) =>
+      platform.deleteSchool(id, confirmCode, reason),
+    onSuccess: () => {
+      toast.success("School deleted permanently.");
+      void queryClient.invalidateQueries({ queryKey: ["platform"] });
+      router.push("/platform");
     },
     onError,
   });
-  const removeDomain = useMutation({ mutationFn: (domainId: number) => platform.removeDomain(id, domainId), onSuccess: update, onError });
   const setupLink = useMutation({ mutationFn: (userId: number) => platform.setupLink(id, userId), onSuccess: setLink, onError });
 
   if (detail.isPending) return <Loading />;
@@ -286,37 +288,6 @@ export function SchoolDetailPage() {
           note="Their old sessions were ended. The link works once and expires in 48 hours."
         />
       )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Website domains</CardTitle>
-          <CardDescription>The school&apos;s public website is served on these host names.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {(s.domains ?? []).map((d) => (
-            <div key={d.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-              <span>{d.host}</span>
-              <Button size="icon-sm" variant="ghost" aria-label={`Remove ${d.host}`} onClick={() => d.id && removeDomain.mutate(d.id)}>
-                <Trash2 aria-hidden />
-              </Button>
-            </div>
-          ))}
-          <form
-            className="flex items-end gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              addDomain.mutate();
-            }}
-          >
-            <Field id="d-host" label="Add domain" className="flex-1">
-              <Input id="d-host" value={host} onChange={(e) => setHost(e.target.value)} placeholder="www.school.edu.pk" required />
-            </Field>
-            <Button type="submit" variant="outline" disabled={addDomain.isPending}>
-              <Plus aria-hidden /> Add
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -383,6 +354,20 @@ export function SchoolDetailPage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Delete school</CardTitle>
+          <CardDescription>
+            Permanently removes this school, its users and all related data. This cannot be undone.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="destructive" onClick={() => setDeleting(true)}>
+            Delete school
+          </Button>
+        </CardContent>
+      </Card>
+
       <ConfirmDialog
         open={suspending}
         onOpenChange={setSuspending}
@@ -393,6 +378,19 @@ export function SchoolDetailPage() {
         requireReason
         pending={suspend.isPending}
         onConfirm={(reason) => suspend.mutate(reason)}
+      />
+
+      <ConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title={`Delete ${s.name}?`}
+        description="Every record for this school will be removed from the database."
+        confirmLabel="Delete permanently"
+        destructive
+        requireReason
+        requireMatch={{ label: "School code", expected: s.code ?? "" }}
+        pending={deleteSchool.isPending}
+        onConfirm={(reason, confirmCode) => deleteSchool.mutate({ reason, confirmCode: confirmCode ?? "" })}
       />
     </div>
   );

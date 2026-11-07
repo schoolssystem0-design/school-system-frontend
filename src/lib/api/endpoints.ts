@@ -145,6 +145,8 @@ export const platform = {
   suspend: (id: number, reason: string) =>
     api<SchoolDetail>(`/platform/schools/${id}/suspend`, { method: "POST", body: { reason } }),
   reactivate: (id: number) => api<SchoolDetail>(`/platform/schools/${id}/reactivate`, { method: "POST" }),
+  deleteSchool: (id: number, confirmCode: string, reason: string) =>
+    api<void>(`/platform/schools/${id}/delete`, { method: "POST", body: { confirmCode, reason } }),
   addDomain: (id: number, host: string) =>
     api<SchoolDetail>(`/platform/schools/${id}/domains`, { method: "POST", body: { host, primary: false } }),
   removeDomain: (id: number, domainId: number) =>

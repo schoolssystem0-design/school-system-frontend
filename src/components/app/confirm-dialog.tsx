@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "./field";
 
@@ -25,6 +26,7 @@ export function ConfirmDialog({
   confirmLabel,
   destructive,
   requireReason,
+  requireMatch,
   pending,
   onConfirm,
 }: {
@@ -35,12 +37,17 @@ export function ConfirmDialog({
   confirmLabel: string;
   destructive?: boolean;
   requireReason?: boolean;
+  /** User must type this text exactly (case-insensitive) before confirming. */
+  requireMatch?: { label: string; expected: string };
   pending?: boolean;
-  onConfirm: (reason: string) => void;
+  onConfirm: (reason: string, typedMatch?: string) => void;
 }) {
   const [reason, setReason] = useState("");
+  const [match, setMatch] = useState("");
   const [touched, setTouched] = useState(false);
   const missingReason = requireReason && reason.trim().length === 0;
+  const missingMatch =
+    requireMatch != null && match.trim().toUpperCase() !== requireMatch.expected.trim().toUpperCase();
 
   return (
     <Dialog
@@ -48,6 +55,7 @@ export function ConfirmDialog({
       onOpenChange={(next) => {
         if (!next) {
           setReason("");
+          setMatch("");
           setTouched(false);
         }
         onOpenChange(next);
@@ -59,13 +67,30 @@ export function ConfirmDialog({
           onSubmit={(e) => {
             e.preventDefault();
             setTouched(true);
-            if (!missingReason) onConfirm(reason.trim());
+            if (!missingReason && !missingMatch) {
+              onConfirm(reason.trim(), requireMatch ? match.trim() : undefined);
+            }
           }}
         >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
+          {requireMatch && (
+            <Field
+              id="confirm-match"
+              label={requireMatch.label}
+              error={touched && missingMatch ? `Type ${requireMatch.expected} to confirm` : undefined}
+            >
+              <Input
+                id="confirm-match"
+                value={match}
+                onChange={(e) => setMatch(e.target.value)}
+                autoComplete="off"
+                aria-invalid={touched && missingMatch}
+              />
+            </Field>
+          )}
           {requireReason && (
             <Field id="confirm-reason" label="Reason" error={touched && missingReason ? "Give a reason" : undefined}>
               <Textarea
@@ -82,7 +107,11 @@ export function ConfirmDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" variant={destructive ? "destructive" : "default"} disabled={pending}>
+            <Button
+              type="submit"
+              variant={destructive ? "destructive" : "default"}
+              disabled={pending || missingReason || missingMatch}
+            >
               {pending ? "Working…" : confirmLabel}
             </Button>
           </DialogFooter>
