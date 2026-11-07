@@ -31,7 +31,7 @@ function SchoolLogoPreview({ schoolCode }: { schoolCode: string }) {
         key={src}
         src={src}
         alt="School logo"
-        className="size-20 rounded-2xl bg-white object-contain p-1.5 shadow-sm ring-1 ring-black/5"
+        className="size-20 rounded-2xl bg-white object-cover shadow-md ring-1 ring-black/10"
         onLoad={() => setLoaded(src)}
         onError={() => setLoaded(null)}
       />

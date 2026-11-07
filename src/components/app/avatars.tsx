@@ -43,7 +43,8 @@ export function UserAvatar({
 }
 
 /**
- * The school's logo on a white tile (logos are designed for light backgrounds); a school icon when there is none.
+ * The school's logo filling its rounded tile edge to edge (no white margin; a transparent logo shows on white);
+ * a school icon when there is none.
  * {@code src} wins over {@code logoFileId} (the sign-in page uses the public logo address).
  */
 export function SchoolLogo({
@@ -67,7 +68,7 @@ export function SchoolLogo({
       aria-hidden
       className={cn(
         "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl",
-        src ? "bg-white p-1 ring-1 ring-black/5" : "bg-primary text-white shadow-lg shadow-primary/40",
+        src ? "bg-white shadow-md ring-1 ring-black/10" : "bg-primary text-white shadow-lg shadow-primary/40",
         className,
       )}
     >
@@ -76,7 +77,7 @@ export function SchoolLogo({
         <img
           src={src}
           alt=""
-          className="size-full object-contain"
+          className="size-full object-cover"
           onError={() => {
             setFailed(src);
             onMissing?.();
