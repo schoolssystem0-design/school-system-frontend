@@ -54,8 +54,25 @@ async function proxy(request: NextRequest, path: string[]): Promise<Response> {
   }
 
   const upstream = await fetch(target, init);
-  const responseHeaders = new Headers(upstream.headers);
-  // Hop-by-hop headers must not be forwarded to the browser.
+  const responseHeaders = new Headers();
+  upstream.headers.forEach((value, key) => {
+    if (key.toLowerCase() === "set-cookie") {
+      return;
+    }
+    responseHeaders.set(key, value);
+  });
+  // Multiple Set-Cookie values must be forwarded separately; copying Headers merges them and breaks sessions.
+  const setCookies =
+    typeof upstream.headers.getSetCookie === "function" ? upstream.headers.getSetCookie() : [];
+  if (setCookies.length === 0) {
+    const single = upstream.headers.get("set-cookie");
+    if (single) {
+      setCookies.push(single);
+    }
+  }
+  for (const cookie of setCookies) {
+    responseHeaders.append("Set-Cookie", cookie);
+  }
   responseHeaders.delete("connection");
   responseHeaders.delete("keep-alive");
   responseHeaders.delete("transfer-encoding");
