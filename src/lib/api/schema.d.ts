@@ -1220,6 +1220,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/me/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changeOwnPhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/password-reset/confirm": {
         parameters: {
             query?: never;
@@ -2836,6 +2852,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/iam/users/{id}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changePhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/iam/users/{id}/reset-password": {
         parameters: {
             query?: never;
@@ -3566,6 +3598,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["setupLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/schools/{code}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["logo"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4660,9 +4708,7 @@ export interface components {
             enquiryId?: number;
             /** Format: int64 */
             familyId?: number;
-            grNo?: string;
             newFamily?: components["schemas"]["NewFamily"];
-            rollNo?: string;
             /** Format: int64 */
             sectionId: number;
             student: components["schemas"]["StudentInput"];
@@ -5275,7 +5321,6 @@ export interface components {
             className?: string;
             /** Format: int64 */
             enrolmentId?: number;
-            rollNo?: string;
             /** Format: int64 */
             sectionId?: number;
             sectionName?: string;
@@ -5584,9 +5629,7 @@ export interface components {
             admissionDate?: string;
             /** Format: int64 */
             familyId?: number;
-            grNo?: string;
             newFamily?: components["schemas"]["EnrolFamily"];
-            rollNo?: string;
             /** Format: int64 */
             sectionId: number;
             student: components["schemas"]["EnrolStudent"];
@@ -5619,7 +5662,6 @@ export interface components {
             id?: number;
             kind?: string;
             reason?: string;
-            rollNo?: string;
             /** Format: int64 */
             sectionId?: number;
             sectionName?: string;
@@ -6201,7 +6243,6 @@ export interface components {
             grade?: string;
             name?: string;
             obtained?: string;
-            rollNo?: string;
             /** Format: int64 */
             studentId?: number;
         };
@@ -6219,6 +6260,8 @@ export interface components {
             loginName?: string;
             mustChangePassword?: boolean;
             permissions?: string[];
+            /** Format: int64 */
+            photoFileId?: number;
             school?: components["schemas"]["SchoolInfo"];
             /** Format: date-time */
             stepUpUntil?: string;
@@ -6429,6 +6472,10 @@ export interface components {
             schools?: number;
             /** Format: int64 */
             users?: number;
+        };
+        OwnPhotoRequest: {
+            /** Format: int64 */
+            fileId?: number;
         };
         PageResponseActivityRow: {
             items?: components["schemas"]["ActivityRow"][];
@@ -6775,6 +6822,14 @@ export interface components {
             webhookUrl?: string;
             webhooksRegistered?: boolean;
         };
+        PhotoRequest: {
+            /** Format: int64 */
+            fileId?: number;
+        };
+        PhotoResponse: {
+            /** Format: int64 */
+            photoFileId?: number;
+        };
         PlannedLine: {
             description?: string;
             discount?: string;
@@ -6938,7 +6993,6 @@ export interface components {
             name?: string;
             note?: string;
             onApprovedLeave?: boolean;
-            rollNo?: string;
             saved?: boolean;
             status?: string;
             /** Format: int64 */
@@ -7209,6 +7263,8 @@ export interface components {
             code?: string;
             /** Format: int64 */
             id?: number;
+            /** Format: int64 */
+            logoFileId?: number;
             name?: string;
         };
         SchoolRow: {
@@ -7637,7 +7693,6 @@ export interface components {
             reason?: string;
             remarks?: string;
             result?: string;
-            seatNo?: string;
             session?: string;
         };
         StudentDetails: {
@@ -7655,7 +7710,6 @@ export interface components {
             placeOfBirth?: string;
             previousSchool?: string;
             religion?: string;
-            seatNo?: string;
             studyGroup?: string;
         };
         StudentDocumentRequest: {
@@ -7729,7 +7783,6 @@ export interface components {
             placeOfBirth?: string;
             previousSchool?: string;
             religion?: string;
-            seatNo?: string;
             studyGroup?: string;
         };
         StudentMonth: {
@@ -7762,7 +7815,6 @@ export interface components {
             /** Format: int32 */
             position?: number;
             principalRemark?: string;
-            rollNo?: string;
             section?: string;
             /** Format: int64 */
             sectionId?: number;
@@ -7785,7 +7837,6 @@ export interface components {
             name?: string;
             /** Format: int64 */
             photoFileId?: number;
-            rollNo?: string;
             /** Format: int64 */
             sectionId?: number;
             sectionName?: string;
@@ -7933,7 +7984,6 @@ export interface components {
             percent?: string;
             /** Format: int32 */
             position?: number;
-            rollNo?: string;
             /** Format: int64 */
             studentId?: number;
         };
@@ -7993,7 +8043,6 @@ export interface components {
             reason: string;
         };
         UpdateRequest: {
-            grNo?: string;
             student: components["schemas"]["StudentInput"];
             /** Format: int64 */
             version?: number;
@@ -8038,6 +8087,8 @@ export interface components {
             mainAdmin?: boolean;
             mustChangePassword?: boolean;
             phone?: string;
+            /** Format: int64 */
+            photoFileId?: number;
             roles?: components["schemas"]["RoleRef"][];
             status?: string;
             username?: string;
@@ -10468,6 +10519,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    changeOwnPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnPhotoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PhotoResponse"];
                 };
             };
         };
@@ -13012,7 +13087,7 @@ export interface operations {
     upload: {
         parameters: {
             query: {
-                purpose: "SCHOOL_LOGO" | "SCHOOL_LETTERHEAD" | "SCHOOL_STAMP" | "SIGNATURE" | "PHOTO" | "STUDENT_DOCUMENT" | "STAFF_DOCUMENT" | "ACCOUNT_DOCUMENT";
+                purpose: "SCHOOL_LOGO" | "SCHOOL_LETTERHEAD" | "SCHOOL_STAMP" | "SIGNATURE" | "PHOTO" | "USER_PHOTO" | "STUDENT_DOCUMENT" | "STAFF_DOCUMENT" | "ACCOUNT_DOCUMENT";
             };
             header?: never;
             path?: never;
@@ -13332,6 +13407,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserView"];
+                };
+            };
+        };
+    };
+    changePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoRequest"];
             };
         };
         responses: {
@@ -14590,6 +14691,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SetupLink"];
+                };
+            };
+        };
+    };
+    logo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };

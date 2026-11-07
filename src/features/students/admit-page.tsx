@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,17 +15,15 @@ import { students, type FamilyRow } from "@/lib/api/people";
 import { emptyFamily, familyBody, FamilyForm } from "@/features/families/family-form";
 import { FamilyPicker } from "@/features/families/family-picker";
 import { SectionSelect, today } from "@/features/people/shared";
+import { GrNumberNote } from "./gr-number-note";
 import { studentBody, StudentForm, studentFrom } from "./student-form";
 
 /** Direct admission without an enquiry (FR 5.1). Enquiries are enrolled from their own page. */
 export function AdmitPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const suggested = useQuery({ queryKey: ["students", "suggest-gr"], queryFn: students.suggestGr });
   const [student, setStudent] = useState(studentFrom());
   const [sectionId, setSectionId] = useState<number | "">("");
-  const [grNo, setGrNo] = useState("");
-  const [rollNo, setRollNo] = useState("");
   const [admissionDate, setAdmissionDate] = useState(today);
   const [familyMode, setFamilyMode] = useState<"existing" | "new">("new");
   const [family, setFamily] = useState<FamilyRow | null>(null);
@@ -36,8 +34,6 @@ export function AdmitPage() {
       students.admit({
         student: studentBody(student),
         sectionId: Number(sectionId),
-        grNo: grNo.trim() || undefined,
-        rollNo: rollNo.trim() || undefined,
         admissionDate,
         familyId: familyMode === "existing" ? (family?.id ?? undefined) : undefined,
         newFamily: familyMode === "new" ? familyBody(newFamily) : undefined,
@@ -63,7 +59,7 @@ export function AdmitPage() {
     >
       <PageHeader
         title="New admission"
-        description="The student is placed in a section from the admission date. A GR number is given automatically unless you type one."
+        description="The student is placed in a section from the admission date. The GR number is given automatically."
         actions={
           <Button variant="outline" render={<Link href="/app/students" />}>
             Cancel
@@ -82,19 +78,14 @@ export function AdmitPage() {
         <CardHeader>
           <CardTitle>Class and admission</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field id="adm-section" label="Class and section">
             <SectionSelect id="adm-section" required value={sectionId} onChange={setSectionId} />
           </Field>
           <Field id="adm-date" label="Admission date">
             <Input id="adm-date" type="date" required value={admissionDate} onChange={(e) => setAdmissionDate(e.target.value)} />
           </Field>
-          <Field id="adm-gr" label="GR no." hint={suggested.data ? `Next: ${suggested.data.grNo}` : undefined}>
-            <Input id="adm-gr" maxLength={20} value={grNo} placeholder={suggested.data?.grNo} onChange={(e) => setGrNo(e.target.value)} />
-          </Field>
-          <Field id="adm-roll" label="Roll no.">
-            <Input id="adm-roll" maxLength={10} value={rollNo} onChange={(e) => setRollNo(e.target.value)} />
-          </Field>
+          <GrNumberNote />
         </CardContent>
       </Card>
       <Card>

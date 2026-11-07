@@ -164,7 +164,6 @@ function StudentList() {
                   <TableHead>Name</TableHead>
                   <TableHead>Father</TableHead>
                   <TableHead>Class</TableHead>
-                  <TableHead>Roll no.</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -179,7 +178,6 @@ function StudentList() {
                     </TableCell>
                     <TableCell>{s.fatherName ?? "—"}</TableCell>
                     <TableCell>{s.className ? `${s.className} - ${s.sectionName}` : "—"}</TableCell>
-                    <TableCell>{s.rollNo ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant={s.status === "ACTIVE" ? "default" : "secondary"}>
                         {s.status === "ACTIVE" ? "Studying" : label(s.status)}

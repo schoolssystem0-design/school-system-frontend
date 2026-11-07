@@ -19,8 +19,6 @@ import { P } from "@/lib/permissions";
 import { SectionSelect, useCan } from "@/features/people/shared";
 
 const STUDENT_FIELDS = [
-  ["ROLL_NO", "Roll no."],
-  ["SEAT_NO", "Board seat no."],
   ["STUDY_GROUP", "Study group"],
   ["DOB", "Date of birth"],
   ["B_FORM_NO", "B-Form no."],
@@ -83,7 +81,7 @@ function BulkEditor({ kind }: { kind: "students" | "families" }) {
   // One row per student, or per family (siblings in the same section share one row).
   const rows =
     kind === "students"
-      ? (list.data?.items ?? []).map((s) => ({ id: s.id ?? 0, label: s.name, sub: s.grNo, current: field === "ROLL_NO" ? s.rollNo : undefined }))
+      ? (list.data?.items ?? []).map((s) => ({ id: s.id ?? 0, label: s.name, sub: s.grNo, current: undefined }))
       : [...new Map((list.data?.items ?? []).filter((s) => s.familyId).map((s) => [s.familyId, s])).values()].map((s) => ({
           id: s.familyId ?? 0,
           label: s.fatherName ?? "—",

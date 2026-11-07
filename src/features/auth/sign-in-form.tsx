@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { publicLogoUrl } from "@/components/app/avatars";
 import { ApiError } from "@/lib/api/client";
 import { fetchMe, login, meQueryKey } from "@/lib/api/auth";
 import {
@@ -17,6 +18,26 @@ import {
   signInErrorMessage,
   validateSignIn,
 } from "./sign-in-schema";
+
+/** The school's logo, once the school code is known; nothing at all while it is unknown or has no logo. */
+function SchoolLogoPreview({ schoolCode }: { schoolCode: string }) {
+  const src = schoolCode.trim().length >= 2 ? publicLogoUrl(schoolCode) : null;
+  const [loaded, setLoaded] = useState<string | null>(null);
+  if (!src) return null;
+  return (
+    <div className={loaded === src ? "flex justify-center" : "hidden"}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- school logo from the API */}
+      <img
+        key={src}
+        src={src}
+        alt="School logo"
+        className="size-20 rounded-2xl bg-white object-contain p-1.5 shadow-sm ring-1 ring-black/5"
+        onLoad={() => setLoaded(src)}
+        onError={() => setLoaded(null)}
+      />
+    </div>
+  );
+}
 
 export function SignInForm() {
   const router = useRouter();
@@ -65,6 +86,7 @@ export function SignInForm() {
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+      <SchoolLogoPreview schoolCode={schoolCode} />
       {serverError && (
         <Alert variant="destructive" role="alert">
           <AlertCircle aria-hidden />

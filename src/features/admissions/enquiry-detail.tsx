@@ -24,12 +24,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { errorMessage, openBlob } from "@/lib/api/client";
-import { admissions, students, type Enquiry, type FamilyRow } from "@/lib/api/people";
+import { admissions, type Enquiry, type FamilyRow } from "@/lib/api/people";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { emptyFamily, familyBody, FamilyForm } from "@/features/families/family-form";
 import { FamilyPicker } from "@/features/families/family-picker";
 import { SectionSelect, today, useCan } from "@/features/people/shared";
+import { GrNumberNote } from "@/features/students/gr-number-note";
 import { StatusBadge } from "./admissions-page";
 import { DuplicateWarning, enquiryBody, EnquiryForm, enquiryFrom } from "./enquiry-form";
 
@@ -316,10 +317,7 @@ function EnrolDialog({ enquiry, onClose }: { enquiry: Enquiry; onClose: () => vo
   const router = useRouter();
   const queryClient = useQueryClient();
   const d = enquiry.details;
-  const suggested = useQuery({ queryKey: ["students", "suggest-gr"], queryFn: students.suggestGr });
   const [sectionId, setSectionId] = useState<number | "">("");
-  const [grNo, setGrNo] = useState("");
-  const [rollNo, setRollNo] = useState("");
   const [admissionDate, setAdmissionDate] = useState(today);
   const [gender, setGender] = useState(d?.gender ?? "");
   const [mode, setMode] = useState<"new" | "existing">("new");
@@ -335,8 +333,6 @@ function EnrolDialog({ enquiry, onClose }: { enquiry: Enquiry; onClose: () => vo
     mutationFn: () =>
       admissions.enrol(enquiry.id ?? 0, {
         sectionId: Number(sectionId),
-        grNo: grNo.trim() || undefined,
-        rollNo: rollNo.trim() || undefined,
         admissionDate,
         student: {
           name: d?.childName ?? "",
@@ -392,12 +388,7 @@ function EnrolDialog({ enquiry, onClose }: { enquiry: Enquiry; onClose: () => vo
             <Field id="en-date" label="Admission date">
               <Input id="en-date" type="date" required value={admissionDate} onChange={(e) => setAdmissionDate(e.target.value)} />
             </Field>
-            <Field id="en-gr" label="GR no." hint={suggested.data ? `Next: ${suggested.data.grNo}` : undefined}>
-              <Input id="en-gr" maxLength={20} placeholder={suggested.data?.grNo} value={grNo} onChange={(e) => setGrNo(e.target.value)} />
-            </Field>
-            <Field id="en-roll" label="Roll no.">
-              <Input id="en-roll" maxLength={10} value={rollNo} onChange={(e) => setRollNo(e.target.value)} />
-            </Field>
+            <GrNumberNote />
           </div>
           <fieldset className="flex flex-wrap gap-4 text-sm">
             <legend className="mb-2 font-medium">Family</legend>

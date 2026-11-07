@@ -77,7 +77,6 @@ function Profile({ student }: { student: Student }) {
             description={[
               `GR no. ${student.grNo}`,
               current ? `${current.className} - ${current.sectionName}` : null,
-              current?.rollNo ? `Roll no. ${current.rollNo}` : null,
               `Admitted ${formatDate(student.admissionDate)}`,
             ]
               .filter(Boolean)
@@ -165,11 +164,10 @@ function Details({ student }: { student: Student }) {
   const can = useCan();
   const queryClient = useQueryClient();
   const [value, setValue] = useState(studentFrom(student.details));
-  const [grNo, setGrNo] = useState(student.grNo ?? "");
   const manage = can(P.STUDENTS_MANAGE);
   const save = useMutation({
     mutationFn: () =>
-      students.update(student.id ?? 0, { student: studentBody(value), grNo: grNo.trim(), version: student.version }),
+      students.update(student.id ?? 0, { student: studentBody(value), version: student.version }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["students"] });
       toast.success("Student saved");
@@ -192,8 +190,8 @@ function Details({ student }: { student: Student }) {
             </Alert>
           )}
           <fieldset disabled={!manage} className="flex flex-col gap-4">
-            <Field id="sp-gr" label="GR no." className="max-w-48" hint="Changing it is recorded in the activity history">
-              <Input id="sp-gr" required maxLength={20} value={grNo} onChange={(e) => setGrNo(e.target.value)} />
+            <Field id="sp-gr" label="GR no." className="max-w-48" hint="Given by the system; it cannot be changed">
+              <Input id="sp-gr" readOnly disabled value={student.grNo ?? ""} className="tabular-nums" />
             </Field>
             <StudentForm idPrefix="sp" value={value} onChange={setValue} privateHidden={student.privateHidden} />
           </fieldset>
@@ -222,7 +220,6 @@ function History({ id }: { id: number }) {
             <TableRow>
               <TableHead>Year</TableHead>
               <TableHead>Class</TableHead>
-              <TableHead>Roll no.</TableHead>
               <TableHead>From</TableHead>
               <TableHead>To</TableHead>
               <TableHead>How</TableHead>
@@ -236,7 +233,6 @@ function History({ id }: { id: number }) {
                 <TableCell>
                   {e.className} - {e.sectionName}
                 </TableCell>
-                <TableCell>{e.rollNo ?? "—"}</TableCell>
                 <TableCell>{formatDate(e.effectiveFrom)}</TableCell>
                 <TableCell>{e.effectiveTo ? formatDate(e.effectiveTo) : "Now"}</TableCell>
                 <TableCell>{label(e.kind)}</TableCell>

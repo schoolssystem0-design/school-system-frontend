@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Camera,
   Activity,
   AlarmClock,
   ArrowLeftRight,
@@ -53,6 +54,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { SchoolLogo, UserAvatar } from "@/components/app/avatars";
 import { NativeSelect } from "@/components/app/native-select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -61,6 +63,7 @@ import { fetchMe, logout, meQueryKey, type Me } from "@/lib/api/auth";
 import { platform } from "@/lib/api/endpoints";
 import { can, P, type Permission } from "@/lib/permissions";
 import { StepUpProvider } from "@/features/step-up/step-up-provider";
+import { ProfilePhotoDialog } from "./profile-photo-dialog";
 import { YearProvider, useYear } from "./year-context";
 
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; permission?: Permission };
@@ -239,10 +242,8 @@ export function initials(name?: string) {
 function SidebarContent({ me, pathname, onNavigate }: { me: Me; pathname: string; onNavigate?: () => void }) {
   return (
     <>
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/40">
-          <School className="size-5" aria-hidden />
-        </span>
+      <div className={`flex items-center gap-3 border-b border-sidebar-border px-5 py-4 ${onNavigate ? "pe-14" : ""}`}>
+        <SchoolLogo logoFileId={me.school?.logoFileId} className="size-11" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold leading-tight text-white">{me.school?.name}</p>
           <p className="text-xs text-sidebar-foreground/60">School portal</p>
@@ -362,6 +363,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
   const queryClient = useQueryClient();
   const { selected } = useYear();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const signOut = useMutation({
     mutationFn: logout,
@@ -400,12 +402,25 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
               <YearSwitcher />
             </div>
             <div className="flex items-center gap-2.5">
-              <span
-                aria-hidden
-                className="hidden size-9 items-center justify-center rounded-full bg-highlight text-xs font-semibold text-highlight-foreground ring-2 ring-background sm:flex"
-              >
-                {initials(me.displayName)}
-              </span>
+              {me.actorType === "USER" ? (
+                <button
+                  type="button"
+                  onClick={() => setPhotoOpen(true)}
+                  title="Change your profile photo"
+                  className="group relative rounded-full ring-2 ring-background outline-none transition hover:ring-primary/40 focus-visible:ring-primary"
+                >
+                  <UserAvatar name={me.displayName} photoFileId={me.photoFileId} />
+                  <span className="sr-only">Change your profile photo</span>
+                  <span
+                    aria-hidden
+                    className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-white opacity-0 ring-2 ring-background transition group-hover:opacity-100 group-focus-visible:opacity-100"
+                  >
+                    <Camera className="size-2.5" />
+                  </span>
+                </button>
+              ) : (
+                <UserAvatar name={me.displayName} photoFileId={me.photoFileId} className="ring-2 ring-background" />
+              )}
               <span className="hidden flex-col leading-tight sm:flex">
                 <span className="max-w-40 truncate text-sm font-medium">{me.displayName}</span>
                 <span className="text-xs text-muted-foreground">({me.school?.code})</span>
@@ -431,6 +446,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
           </p>
         )}
       </header>
+      {photoOpen && <ProfilePhotoDialog me={me} onClose={() => setPhotoOpen(false)} />}
       {/* Outside the header: its backdrop blur would otherwise trap this fixed overlay inside the header box. */}
       {menuOpen && <MobileDrawer me={me} pathname={pathname} onClose={closeMenu} />}
     </>

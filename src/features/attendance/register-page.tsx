@@ -133,7 +133,7 @@ function RegisterGrid({ register }: { register: Register }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Roll</TableHead>
+              <TableHead className="w-20">GR no.</TableHead>
               <TableHead>Student</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -143,9 +143,9 @@ function RegisterGrid({ register }: { register: Register }) {
               const current = statuses[r.studentId ?? 0];
               return (
                 <TableRow key={r.studentId}>
-                  <TableCell>{r.rollNo ?? "—"}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{r.grNo}</TableCell>
                   <TableCell>
-                    <span className="font-medium">{r.name}</span> <span className="text-xs text-muted-foreground">GR {r.grNo}</span>
+                    <span className="font-medium">{r.name}</span>
                     {r.onApprovedLeave && <span className="block text-xs text-primary">On approved leave</span>}
                   </TableCell>
                   <TableCell>

@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UserAvatar } from "@/components/app/avatars";
+import { PhotoPicker } from "@/features/shell/profile-photo-dialog";
 import { errorMessage, type Schemas } from "@/lib/api/client";
 import { iam, type Role, type User } from "@/lib/api/endpoints";
 import { formatDateTime } from "@/lib/format";
@@ -142,8 +144,13 @@ export function UsersPage() {
                 {users.data.items.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">
-                      {u.displayName}
-                      {u.mainAdmin && <Badge variant="outline" className="ms-2">Main admin</Badge>}
+                      <span className="flex items-center gap-2.5">
+                        <UserAvatar name={u.displayName} photoFileId={u.photoFileId} className="size-8" />
+                        <span>
+                          {u.displayName}
+                          {u.mainAdmin && <Badge variant="outline" className="ms-2">Main admin</Badge>}
+                        </span>
+                      </span>
                     </TableCell>
                     <TableCell>{u.username}</TableCell>
                     <TableCell className="max-w-56 truncate">{(u.roles ?? []).map((r) => r.name).join(", ")}</TableCell>
@@ -245,6 +252,16 @@ function UserDialog({
     dataScope: (user?.dataScope ?? "ALL") as "ALL" | "ASSIGNED_CLASSES" | "SELF",
   });
   const [roleIds, setRoleIds] = useState<number[]>((user?.roles ?? []).map((r) => r.id ?? 0));
+  const [photoFileId, setPhotoFileId] = useState<number | null>(user?.photoFileId ?? null);
+  const photo = useMutation({
+    mutationFn: (fileId: number | null) => iam.userPhoto(user?.id ?? 0, fileId),
+    onSuccess: (saved) => {
+      setPhotoFileId(saved.photoFileId ?? null);
+      onSaved();
+      toast.success(saved.photoFileId ? "Photo saved" : "Photo removed");
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
   const save = useMutation({
     mutationFn: () =>
       guard(async () => {
@@ -286,6 +303,9 @@ function UserDialog({
             <DialogTitle>{user ? `Edit ${user.displayName}` : "Add user"}</DialogTitle>
             {!user && <DialogDescription>A temporary password is created and shown once.</DialogDescription>}
           </DialogHeader>
+          {user && (
+            <PhotoPicker name={form.displayName} photoFileId={photoFileId} saving={photo.isPending} onSave={(id) => photo.mutate(id)} />
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             <Field id="u-name" label="Full name">
               <Input id="u-name" required maxLength={200} value={form.displayName} onChange={set("displayName")} />

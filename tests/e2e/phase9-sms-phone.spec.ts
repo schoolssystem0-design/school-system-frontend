@@ -32,7 +32,7 @@ test("connect the school phone, send a test SMS and follow it to delivered", asy
   await signInSchool(page);
   // Quiet hours off for the test, so it passes at any time of day (the test SMS ignores them anyway)
   await page.goto("/app/messages?tab=phone");
-  await expect(page.getByRole("heading", { name: "Connect the phone" }).or(page.getByText("Connection"))).toBeVisible();
+  await expect(page.getByText("Connect the phone", { exact: true }).or(page.getByText("Connection", { exact: true }))).toBeVisible();
 
   // A wrong password is refused and nothing is stored
   await page.getByLabel("Username").fill(USER);

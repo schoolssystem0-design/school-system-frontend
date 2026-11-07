@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarRange, Check, ChevronRight, Rocket, School, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { DashboardPanels } from "@/features/dashboard/dashboard-page";
+import { SchoolLogo } from "@/components/app/avatars";
 import { Card } from "@/components/ui/card";
 import { academics, school } from "@/lib/api/endpoints";
 import { can, P } from "@/lib/permissions";
@@ -98,9 +99,11 @@ export function Welcome() {
               )}
             </div>
           </div>
-          <span aria-hidden className="hidden size-20 shrink-0 items-center justify-center rounded-3xl bg-primary shadow-xl shadow-primary/40 ring-1 ring-white/20 sm:flex">
-            <School className="size-10" />
-          </span>
+          <SchoolLogo
+            logoFileId={me.data.school?.logoFileId}
+            className="hidden size-20 rounded-3xl shadow-xl shadow-primary/30 sm:flex"
+            iconClassName="size-10"
+          />
         </div>
       </section>
       {showSetup && (

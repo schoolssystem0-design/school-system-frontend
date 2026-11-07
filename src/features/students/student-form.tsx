@@ -20,7 +20,6 @@ export type StudentFields = {
   address: string;
   previousSchool: string;
   studyGroup: string;
-  seatNo: string;
   notes: string;
   photoFileId: number | null;
 };
@@ -38,7 +37,6 @@ export function studentFrom(details?: Schemas["StudentDetails"]): StudentFields 
     address: details?.address ?? "",
     previousSchool: details?.previousSchool ?? "",
     studyGroup: details?.studyGroup ?? "",
-    seatNo: details?.seatNo ?? "",
     notes: details?.notes ?? "",
     photoFileId: details?.photoFileId ?? null,
   };
@@ -137,9 +135,6 @@ export function StudentForm({
           <>
             <Field id={id("group")} label="Study group" hint="e.g. Science, Computer, Arts">
               <Input id={id("group")} maxLength={50} value={value.studyGroup} onChange={set("studyGroup")} />
-            </Field>
-            <Field id={id("seat")} label="Board seat no.">
-              <Input id={id("seat")} maxLength={30} value={value.seatNo} onChange={set("seatNo")} />
             </Field>
             <Field id={id("notes")} label="Notes" className="sm:col-span-2 lg:col-span-3">
               <Textarea id={id("notes")} rows={2} maxLength={1000} value={value.notes} onChange={set("notes")} />

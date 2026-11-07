@@ -256,7 +256,7 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16">Roll</TableHead>
+                  <TableHead className="w-20">GR no.</TableHead>
                   <TableHead>Student</TableHead>
                   <TableHead>Marks</TableHead>
                   <TableHead>Absent</TableHead>
@@ -270,9 +270,9 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
                   const e = entries[studentId];
                   return (
                     <TableRow key={studentId}>
-                      <TableCell>{r.rollNo ?? "—"}</TableCell>
+                      <TableCell className="tabular-nums text-muted-foreground">{r.grNo}</TableCell>
                       <TableCell>
-                        <span className="font-medium">{r.name}</span> <span className="text-xs text-muted-foreground">GR {r.grNo}</span>
+                        <span className="font-medium">{r.name}</span>
                       </TableCell>
                       <TableCell>
                         <Input

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { errorMessage, fileUrl } from "@/lib/api/client";
+import { meQueryKey } from "@/lib/api/auth";
 import { school, type Profile } from "@/lib/api/endpoints";
 import { can, P } from "@/lib/permissions";
 import { useMe } from "@/features/shell/app-shell";
@@ -57,6 +58,8 @@ function ProfileForm({ initial }: { initial: Profile }) {
       }),
     onSuccess: (saved) => {
       queryClient.setQueryData(["school", "profile"], saved);
+      // The logo shows in the menu and dashboard: refresh it there too.
+      void queryClient.invalidateQueries({ queryKey: meQueryKey });
       toast.success("School profile saved. New documents will use these details.");
     },
     onError: (e) => toast.error(errorMessage(e)),

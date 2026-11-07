@@ -596,7 +596,7 @@ function PrintPanel({ ec }: { ec: ExamClass }) {
         <Card>
           <CardHeader>
             <CardTitle>Admit cards</CardTitle>
-            <CardDescription>Roll number slips with the datesheet, four to a page.</CardDescription>
+            <CardDescription>Admit cards with the datesheet, four to a page.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <label className="flex items-center gap-2 text-sm">

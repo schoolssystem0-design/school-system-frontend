@@ -173,7 +173,7 @@ function Grid({ grid }: { grid: MarkGrid }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Roll</TableHead>
+              <TableHead className="w-20">GR no.</TableHead>
               <TableHead>Student</TableHead>
               <TableHead>{gradeOnly ? "Grade" : "Marks"}</TableHead>
               <TableHead>Not marked</TableHead>
@@ -186,9 +186,9 @@ function Grid({ grid }: { grid: MarkGrid }) {
               const bad = over.includes(r);
               return (
                 <TableRow key={id}>
-                  <TableCell>{r.rollNo ?? "—"}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{r.grNo}</TableCell>
                   <TableCell>
-                    <span className="font-medium">{r.name}</span> <span className="text-xs text-muted-foreground">GR {r.grNo}</span>
+                    <span className="font-medium">{r.name}</span>
                   </TableCell>
                   <TableCell>
                     {gradeOnly ? (

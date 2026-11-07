@@ -387,7 +387,7 @@ const CERTIFICATES: { type: StudentCertificateType; label: string; fields: (keyo
   { type: "CHARACTER", label: "Character certificate", fields: ["conduct", "remarks"] },
   { type: "DATE_OF_BIRTH", label: "Date of birth certificate", fields: ["remarks"] },
   { type: "APPRECIATION", label: "Certificate of appreciation", fields: ["reason", "remarks"] },
-  { type: "PROVISIONAL", label: "Provisional certificate", fields: ["examination", "session", "seatNo", "result", "remarks"] },
+  { type: "PROVISIONAL", label: "Provisional certificate", fields: ["examination", "session", "result", "remarks"] },
   { type: "HOPE", label: "Hope certificate", fields: ["examination", "session", "remarks"] },
 ];
 
@@ -396,7 +396,6 @@ type CertificateFields = {
   conduct: string;
   examination: string;
   session: string;
-  seatNo: string;
   result: string;
   remarks: string;
 };
@@ -406,7 +405,6 @@ const FIELD_LABELS: Record<keyof CertificateFields, string> = {
   conduct: "Conduct",
   examination: "Examination",
   session: "Session / held in",
-  seatNo: "Seat no.",
   result: "Result (grade / division)",
   remarks: "Extra remarks",
 };
@@ -424,7 +422,6 @@ export function Certificates({ student }: { student: Student }) {
     conduct: "good",
     examination: "",
     session: "",
-    seatNo: student.details?.seatNo ?? "",
     result: "",
     remarks: "",
   });

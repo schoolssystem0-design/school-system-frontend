@@ -55,6 +55,11 @@ export const iam = {
   activate: (id: number, reason: string) =>
     api<User>(`/iam/users/${id}/activate`, { method: "POST", body: { reason } }),
   unlock: (id: number) => api<User>(`/iam/users/${id}/unlock`, { method: "POST" }),
+  /** Admin sets (or removes, with null) a user's profile photo. */
+  userPhoto: (id: number, fileId: number | null) => api<User>(`/iam/users/${id}/photo`, { method: "PUT", body: { fileId } }),
+  /** The signed-in user sets (or removes) their own photo. */
+  myPhoto: (fileId: number | null) =>
+    api<Schemas["PhotoResponse"]>("/auth/me/photo", { method: "PUT", body: { fileId } }),
   resetPassword: (id: number) =>
     api<Schemas["TemporaryPassword"]>(`/iam/users/${id}/reset-password`, { method: "POST" }),
   roles: () => api<Role[]>("/iam/roles"),
