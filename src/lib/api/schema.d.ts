@@ -2571,7 +2571,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["status_1"];
+        get: operations["status_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3358,6 +3358,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["enrol"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["status_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/email/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["test_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5418,6 +5450,23 @@ export interface components {
             id?: number;
             primary?: boolean;
             verified?: boolean;
+        };
+        EmailStatus: {
+            from?: string;
+            fromName?: string;
+            local?: boolean;
+            problems?: string[];
+            ready?: boolean;
+            service?: string;
+            webBaseUrl?: string;
+        };
+        EmailTestRequest: {
+            /** Format: email */
+            to: string;
+        };
+        EmailTestResult: {
+            error?: string;
+            sent?: boolean;
         };
         EndDiscountRequest: {
             /** Format: date */
@@ -12745,7 +12794,7 @@ export interface operations {
             };
         };
     };
-    status_1: {
+    status_2: {
         parameters: {
             query?: {
                 classId?: number;
@@ -14194,6 +14243,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PlatformLoginResponse"];
+                };
+            };
+        };
+    };
+    status_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EmailStatus"];
+                };
+            };
+        };
+    };
+    test_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailTestRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EmailTestResult"];
                 };
             };
         };

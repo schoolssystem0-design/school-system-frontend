@@ -293,7 +293,7 @@ function UserDialog({
             <Field id="u-username" label="Username" hint={user ? "Cannot be changed" : "lowercase, e.g. ahmed.khan"}>
               <Input id="u-username" required disabled={!!user} maxLength={60} value={form.username} onChange={set("username")} />
             </Field>
-            <Field id="u-email" label="Email" hint="Needed for verification codes and password resets">
+            <Field id="u-email" label="Email" hint="Required for administrators. Verification codes and password resets are sent here">
               <Input id="u-email" type="email" maxLength={254} value={form.email} onChange={set("email")} />
             </Field>
             <Field id="u-phone" label="Phone">

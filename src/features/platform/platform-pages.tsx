@@ -21,6 +21,7 @@ import { meQueryKey } from "@/lib/api/auth";
 import { platform } from "@/lib/api/endpoints";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SchoolsReport } from "@/features/reports/reports-page";
+import { EmailCheck } from "./email-check";
 
 function useOpenSchool() {
   const router = useRouter();
@@ -72,6 +73,7 @@ export function PlatformOverview() {
         <Stat label="Active schools" value={data.activeSchools} icon={CheckCircle2} chip="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" />
         <Stat label="User accounts" value={data.users} icon={Users} chip="bg-highlight/15 text-highlight-ink" />
       </div>
+      <EmailCheck />
       <Card>
         <CardContent className="p-0">
           {(data.rows ?? []).length === 0 ? (

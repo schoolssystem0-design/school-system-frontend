@@ -129,6 +129,8 @@ export const platform = {
     api<Schemas["PlatformLoginResponse"]>("/platform/auth/totp/enroll", { method: "POST", body: { code } }),
   me: () => api<PlatformMe>("/platform/auth/me"),
   overview: () => api<Schemas["Overview"]>("/platform/overview"),
+  emailStatus: () => api<Schemas["EmailStatus"]>("/platform/email"),
+  emailTest: (to: string) => api<Schemas["EmailTestResult"]>("/platform/email/test", { method: "POST", body: { to } }),
   audit: (page = 0) => api<Page<Schemas["PlatformAuditRow"]>>(`/platform/audit?page=${page}`),
   schools: () => api<SchoolDetail[]>("/platform/schools"),
   school: (id: number) => api<SchoolDetail>(`/platform/schools/${id}`),
