@@ -26,6 +26,12 @@ export default function SignInPage() {
               Forgot your password?
             </Link>
           </p>
+          <p className="mt-3 border-t pt-4 text-center text-sm text-muted-foreground">
+            New school?{" "}
+            <Link href="/start-trial" className="font-medium text-primary underline-offset-4 hover:underline">
+              Start a free 14-day trial
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </main>

@@ -3508,6 +3508,22 @@ export interface paths {
         patch: operations["rename"];
         trace?: never;
     };
+    "/api/v1/platform/schools/{id}/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deleteSchool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/platform/schools/{id}/domains": {
         parameters: {
             query?: never;
@@ -3566,6 +3582,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/schools/{id}/trial/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["endTrial"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/schools/{id}/trial/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["extendTrial"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3636,6 +3684,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/trial": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["info"];
+        put?: never;
+        post: operations["start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/class": {
         parameters: {
             query?: never;
@@ -3644,6 +3708,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["classReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/class-list/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["classListFile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3676,6 +3756,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["student"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/student-record/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["studentRecordFile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4158,6 +4254,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["idCards"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/students/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importStudents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/students/import/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/students/import/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["importTemplate"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5441,6 +5585,10 @@ export interface components {
             /** Format: int32 */
             since?: number;
         };
+        DeleteSchoolRequest: {
+            confirmCode: string;
+            reason: string;
+        };
         DeliveryLog: {
             last30Days?: components["schemas"]["StatusCount"][];
             messages?: components["schemas"]["Queued"][];
@@ -5853,6 +6001,10 @@ export interface components {
         ExperienceCertificateRequest: {
             remarks?: string;
         };
+        ExtendTrialRequest: {
+            /** Format: int32 */
+            days?: number;
+        };
         FailedLine: {
             /** Format: date-time */
             createdAt?: string;
@@ -6048,6 +6200,44 @@ export interface components {
             /** Format: int64 */
             sectionId?: number;
             studentIds?: number[];
+        };
+        ImportCheck: {
+            /** Format: date */
+            admissionDate?: string;
+            fileProblems?: string[];
+            ready?: boolean;
+            rows?: components["schemas"]["ImportRow"][];
+            /** Format: int32 */
+            rowsWithProblems?: number;
+            section?: string;
+            /** Format: int32 */
+            students?: number;
+        };
+        ImportResult: {
+            /** Format: int32 */
+            admitted?: number;
+            section?: string;
+            students?: components["schemas"]["ImportedStudent"][];
+        };
+        ImportRow: {
+            /** Format: date */
+            dob?: string;
+            family?: string;
+            fatherName?: string;
+            fatherPhone?: string;
+            gender?: string;
+            name?: string;
+            problems?: string[];
+            /** Format: int32 */
+            row?: number;
+        };
+        ImportedStudent: {
+            grNo?: string;
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            /** Format: int32 */
+            row?: number;
         };
         LateFeeRequest: {
             amount?: string;
@@ -7266,6 +7456,8 @@ export interface components {
             /** Format: int64 */
             logoFileId?: number;
             name?: string;
+            /** Format: date-time */
+            trialEndsAt?: string;
         };
         SchoolRow: {
             /** Format: int64 */
@@ -7282,6 +7474,8 @@ export interface components {
             lastLoginAt?: string;
             name?: string;
             status?: string;
+            /** Format: date-time */
+            trialEndsAt?: string;
             /** Format: int64 */
             users?: number;
         };
@@ -7296,6 +7490,8 @@ export interface components {
             status?: string;
             suspendedReason?: string;
             timezone?: string;
+            /** Format: date-time */
+            trialEndsAt?: string;
             /** Format: int64 */
             version?: number;
         };
@@ -8038,6 +8234,25 @@ export interface components {
         };
         TotpEnrolRequest: {
             code: string;
+        };
+        TrialInfo: {
+            /** Format: int32 */
+            days?: number;
+        };
+        TrialSignupRequest: {
+            adminName: string;
+            email: string;
+            schoolCode: string;
+            schoolName: string;
+            username: string;
+            website?: string;
+        };
+        TrialStarted: {
+            email?: string;
+            schoolCode?: string;
+            /** Format: date-time */
+            trialEndsAt?: string;
+            username?: string;
         };
         UnlockRequest: {
             reason: string;
@@ -14551,6 +14766,30 @@ export interface operations {
             };
         };
     };
+    deleteSchool: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteSchoolRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     addDomain: {
         parameters: {
             query?: never;
@@ -14634,6 +14873,54 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SuspendRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolView"];
+                };
+            };
+        };
+    };
+    endTrial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolView"];
+                };
+            };
+        };
+    };
+    extendTrial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtendTrialRequest"];
             };
         };
         responses: {
@@ -14744,6 +15031,50 @@ export interface operations {
             };
         };
     };
+    info: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrialInfo"];
+                };
+            };
+        };
+    };
+    start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrialSignupRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrialStarted"];
+                };
+            };
+        };
+    };
     classReport: {
         parameters: {
             query: {
@@ -14765,6 +15096,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportDoc"];
+                };
+            };
+        };
+    };
+    classListFile: {
+        parameters: {
+            query: {
+                classId?: number;
+                sectionId?: number;
+                format: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
@@ -14815,6 +15170,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportDoc"];
+                };
+            };
+        };
+    };
+    studentRecordFile: {
+        parameters: {
+            query: {
+                studentId: number;
+                format: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
@@ -15770,6 +16148,86 @@ export interface operations {
                 };
                 content: {
                     "application/pdf": string;
+                };
+            };
+        };
+    };
+    importStudents: {
+        parameters: {
+            query: {
+                sectionId: number;
+                admissionDate: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImportResult"];
+                };
+            };
+        };
+    };
+    checkImport: {
+        parameters: {
+            query: {
+                sectionId: number;
+                admissionDate: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImportCheck"];
+                };
+            };
+        };
+    };
+    importTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };

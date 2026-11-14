@@ -37,6 +37,8 @@ export function signInErrorMessage(code: string): string {
       return "Too many failed attempts. Try again in 15 minutes or ask your administrator.";
     case "SCHOOL_SUSPENDED":
       return "This school's account is suspended. Contact the system owner.";
+    case "TRIAL_ENDED":
+      return "Your free trial has ended. Contact us to continue: all your data is kept.";
     case "RATE_LIMITED":
       return "Too many sign-in attempts from this network. Wait a few minutes and try again.";
     case "VALIDATION_FAILED":

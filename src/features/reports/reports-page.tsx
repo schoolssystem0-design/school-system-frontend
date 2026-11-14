@@ -18,6 +18,7 @@ import { api, apiBlob, errorMessage, openBlob, type Schemas } from "@/lib/api/cl
 import { P, type Permission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { StudentPicker } from "@/features/fees/fee-shared";
+import { ClassListDownload, StudentRecordDownload } from "./record-downloads";
 import { ClassSelect, SectionSelect, today, useCan } from "@/features/people/shared";
 import { useYear } from "@/features/shell/year-context";
 import { staff as staffApi } from "@/lib/api/people";
@@ -155,7 +156,10 @@ function StudentReport() {
       <div className="flex flex-wrap items-end gap-3 print:hidden">{controls}</div>
       <div className="max-w-md print:hidden"><StudentPicker id="rp-student" selected={student} onSelect={setStudent} /></div>
       {student && ready ? (
-        <ReportView path="student" name="student-report" params={{ studentId: String(student.id), ...period }} />
+        <>
+          <div className="print:hidden"><StudentRecordDownload studentId={student.id ?? 0} grNo={student.grNo} /></div>
+          <ReportView path="student" name="student-report" params={{ studentId: String(student.id), ...period }} />
+        </>
       ) : <Empty title="Choose a student" />}
     </div>
   );
@@ -176,6 +180,7 @@ function ClassReport() {
           <SectionSelect id="rp-section" className="w-44" emptyLabel="Whole class or choose" classId={classId} value={sectionId} onChange={setSectionId} />
         </Field>
         {controls}
+        <ClassListDownload classId={classId} sectionId={sectionId} />
       </div>
       {target && ready ? (
         <ReportView path="class" name="class-report" params={{ ...target, ...period }} />

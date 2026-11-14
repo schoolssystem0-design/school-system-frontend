@@ -49,6 +49,14 @@ export type StudentRow = Schemas["StudentRow"];
 export type Student = Schemas["StudentView"];
 export type StudentCertificateType = "LEAVING" | "DATE_OF_BIRTH" | "CHARACTER" | "APPRECIATION" | "PROVISIONAL" | "HOPE";
 
+function importForm(file: File, sectionId: number, admissionDate: string) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("sectionId", String(sectionId));
+  form.append("admissionDate", admissionDate);
+  return form;
+}
+
 export const students = {
   list: (params: {
     q?: string;
@@ -96,6 +104,13 @@ export const students = {
     apiBlob(`/students/${id}/certificates/${type}`, { method: "POST", body }),
   bioData: (id: number) => apiBlob(`/students/${id}/bio-data`),
   idCards: (body: Schemas["IdCardRequest"]) => apiBlob("/students/id-cards", { method: "POST", body }),
+  /** Admitting many students from Excel: the template, a check (admits nobody), then the import (all or nobody). */
+  importTemplate: () =>
+    apiBlob("/students/import/template", {}, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+  checkImport: (file: File, sectionId: number, admissionDate: string) =>
+    api<Schemas["ImportCheck"]>("/students/import/check", { method: "POST", form: importForm(file, sectionId, admissionDate) }),
+  importStudents: (file: File, sectionId: number, admissionDate: string) =>
+    api<Schemas["ImportResult"]>("/students/import", { method: "POST", form: importForm(file, sectionId, admissionDate) }),
   bulk: (body: Schemas["StudentBulkRequest"]) => api<{ updated: number }>("/students/bulk", { method: "PUT", body }),
   promotionPreview: (fromYearId: number, toYearId: number, classId: number) =>
     api<Schemas["Preview"]>(`/students/promotion/preview?${query({ fromYearId, toYearId, classId })}`),

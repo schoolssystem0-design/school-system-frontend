@@ -55,6 +55,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SchoolLogo, UserAvatar } from "@/components/app/avatars";
+import { TrialBanner } from "./trial-banner";
 import { NativeSelect } from "@/components/app/native-select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -219,6 +220,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <StepUpProvider>
         <div className="flex flex-1 flex-col">
           {me.data.superAdmin && <SuperAdminBanner schoolName={me.data.school.name ?? ""} />}
+          {me.data.school.trialEndsAt && <TrialBanner endsAt={me.data.school.trialEndsAt} />}
           <div className="flex flex-1">
             <aside className="sticky top-0 hidden h-svh w-68 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex print:hidden">
               <SidebarContent me={me.data} pathname={pathname} />

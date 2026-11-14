@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { IdCard, Plus } from "lucide-react";
+import { IdCard, Plus, FileSpreadsheet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import { students } from "@/lib/api/people";
 import { formatDate } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { ClassSelect, label, Pager, SectionSelect, today, useCan } from "@/features/people/shared";
+import { ClassListDownload, useCanDownloadRecords } from "@/features/reports/record-downloads";
 
 /** Student list with search and filters (FR 5.3), class strength (FR 5.9) and the admission/withdrawal register. */
 export function StudentsPage() {
@@ -39,6 +40,11 @@ export function StudentsPage() {
             {can(P.STUDENTS_MANAGE) && (
               <Button variant="outline" render={<Link href="/app/students/bulk" />}>
                 Bulk edit
+              </Button>
+            )}
+            {can(P.ADMISSIONS_ENROL) && (
+              <Button variant="outline" render={<Link href="/app/students/import" />}>
+                <FileSpreadsheet aria-hidden /> Import from Excel
               </Button>
             )}
             {can(P.ADMISSIONS_ENROL) && (
@@ -71,6 +77,7 @@ export function StudentsPage() {
 
 function StudentList() {
   const can = useCan();
+  const canRecords = useCanDownloadRecords();
   const [q, setQ] = useState("");
   const [classId, setClassId] = useState<number | "">("");
   const [sectionId, setSectionId] = useState<number | "">("");
@@ -140,6 +147,7 @@ function StudentList() {
             <option value="ALL">All</option>
           </NativeSelect>
         </Field>
+        {canRecords && <ClassListDownload classId={classId} sectionId={sectionId} />}
         {can(P.STUDENTS_PRINT) && sectionId !== "" && (
           <Button variant="outline" disabled={cards.isPending} onClick={() => cards.mutate()}>
             <IdCard aria-hidden /> {cards.isPending ? "Preparing…" : "ID cards for section"}

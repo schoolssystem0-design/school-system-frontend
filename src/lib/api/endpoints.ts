@@ -156,4 +156,15 @@ export const platform = {
     api<Schemas["SetupLink"]>(`/platform/schools/${schoolId}/users/${userId}/setup-link`, { method: "POST" }),
   openSchool: (schoolId: number) => api<PlatformMe>(`/platform/active-school/${schoolId}`, { method: "POST" }),
   leaveSchool: () => api<PlatformMe>("/platform/active-school", { method: "DELETE" }),
+  /** The trial school becomes a customer: full access from now on. */
+  endTrial: (id: number) => api<SchoolDetail>(`/platform/schools/${id}/trial/end`, { method: "POST" }),
+  extendTrial: (id: number, days: number) =>
+    api<SchoolDetail>(`/platform/schools/${id}/trial/extend`, { method: "POST", body: { days } }),
+};
+
+// ---------------------------------------------------------------- free trial (public)
+export const trial = {
+  info: () => api<Schemas["TrialInfo"]>("/public/trial"),
+  start: (body: Schemas["TrialSignupRequest"]) =>
+    api<Schemas["TrialStarted"]>("/public/trial", { method: "POST", body }),
 };

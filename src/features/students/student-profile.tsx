@@ -39,6 +39,7 @@ import { StudentAttendance } from "@/features/attendance/reports-page";
 import { StudentTestMarks } from "@/features/exams/test-marks-page";
 import { StudentFees } from "@/features/fees/student-fees";
 import { Activities, Certificates, Contacts, Documents } from "./student-records";
+import { StudentRecordDownload, useCanDownloadRecords } from "@/features/reports/record-downloads";
 
 /** The student's profile (FR 5.1–5.8): details, class history, family, documents, activities and certificates. */
 export function StudentProfile() {
@@ -53,6 +54,7 @@ type Action = "move" | "withdraw" | "readmit" | null;
 
 function Profile({ student }: { student: Student }) {
   const can = useCan();
+  const canRecords = useCanDownloadRecords();
   const id = student.id ?? 0;
   const [action, setAction] = useState<Action>(null);
   const bio = useMutation({
@@ -91,6 +93,7 @@ function Profile({ student }: { student: Student }) {
                     <FileText aria-hidden /> Bio-data
                   </Button>
                 )}
+                {canRecords && <StudentRecordDownload studentId={id} grNo={student.grNo} />}
                 {can(P.STUDENTS_MOVE) && active && (
                   <>
                     <Button variant="outline" onClick={() => setAction("move")}>

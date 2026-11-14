@@ -22,6 +22,7 @@ import { platform } from "@/lib/api/endpoints";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SchoolsReport } from "@/features/reports/reports-page";
 import { EmailCheck } from "./email-check";
+import { TrialBadge, TrialCard } from "./trial-admin";
 
 function useOpenSchool() {
   const router = useRouter();
@@ -105,6 +106,7 @@ export function PlatformOverview() {
                     <TableCell>{s.code}</TableCell>
                     <TableCell>
                       <StatusBadge status={s.status} />
+                      <TrialBadge endsAt={s.trialEndsAt} />
                     </TableCell>
                     <TableCell>{s.currentYear ?? "—"}</TableCell>
                     <TableCell className="text-right">{s.classes}</TableCell>
@@ -272,6 +274,7 @@ export function SchoolDetailPage() {
         actions={
           <>
             <StatusBadge status={s.status} />
+            <TrialBadge endsAt={s.trialEndsAt} />
             <Button onClick={() => open.mutate(id)} disabled={open.isPending}>
               Open school <ArrowRight aria-hidden />
             </Button>
@@ -281,6 +284,7 @@ export function SchoolDetailPage() {
       {s.status === "SUSPENDED" && (
         <p className="rounded-md bg-red-50 p-3 text-sm text-red-900">Suspended: {s.suspendedReason}</p>
       )}
+      <TrialCard school={s} onChange={update} />
       {link && (
         <SecretOnce
           title={`New setup link for ${link.username}`}
