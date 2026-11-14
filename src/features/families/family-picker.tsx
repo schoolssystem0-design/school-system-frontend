@@ -1,11 +1,27 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Field } from "@/components/app/field";
 import { Input } from "@/components/ui/input";
 import { families, type FamilyRow } from "@/lib/api/people";
 import { cn } from "@/lib/utils";
+import { browserOffline, isNetworkError } from "@/lib/offline/queue";
+
+/** Families matching a search (family no., parent name or phone), like the online search. */
+export function searchFamilies(all: FamilyRow[], q: string) {
+  const text = q.trim().toLowerCase();
+  const digits = q.replace(/\D/g, "");
+  return all
+    .filter(
+      (f) =>
+        (f.familyNo ?? "").toLowerCase() === text ||
+        (f.fatherName ?? "").toLowerCase().includes(text) ||
+        (f.motherName ?? "").toLowerCase().includes(text) ||
+        (digits.length >= 4 && (f.fatherPhone ?? "").includes(digits)),
+    )
+    .slice(0, 10);
+}
 
 /** Search an existing family by family no., parent name, phone or CNIC and pick one (FR 5.2: siblings share one). */
 export function FamilyPicker({
@@ -18,10 +34,31 @@ export function FamilyPicker({
   onSelect: (family: FamilyRow | null) => void;
 }) {
   const [q, setQ] = useState("");
+  const queryClient = useQueryClient();
   const results = useQuery({
     queryKey: ["families", "pick", q],
-    queryFn: () => families.list({ q }),
+    queryFn: async () => {
+      // No internet: search the family list kept on this device (for admitting brothers and sisters)
+      const offline = () => {
+        const all = queryClient.getQueryData<FamilyRow[]>(["families", "offline-list"]);
+        if (!all) return null;
+        const items = searchFamilies(all, q);
+        return { items, page: 0, size: items.length, totalItems: items.length, totalPages: 1 } as Awaited<ReturnType<typeof families.list>>;
+      };
+      if (browserOffline()) {
+        const found = offline();
+        if (found) return found;
+      }
+      try {
+        return await families.list({ q });
+      } catch (error) {
+        const found = isNetworkError(error) ? offline() : null;
+        if (found) return found;
+        throw error;
+      }
+    },
     enabled: q.trim().length >= 2,
+    networkMode: "always",
   });
   return (
     <div className="flex flex-col gap-2">

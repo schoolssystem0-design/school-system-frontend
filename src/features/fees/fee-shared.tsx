@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Field } from "@/components/app/field";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { students, type StudentRow } from "@/lib/api/people";
 import { formatMoney } from "@/lib/format";
 import { fromPaisa, toPaisa } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { searchSnapshot, snapshotOf } from "@/lib/offline/fees";
+import { browserOffline, isNetworkError } from "@/lib/offline/queue";
 
 /** Search a student by name, GR number, father's name or phone and pick one. */
 export function StudentPicker({
@@ -23,10 +25,31 @@ export function StudentPicker({
   label?: string;
 }) {
   const [q, setQ] = useState("");
+  const queryClient = useQueryClient();
   const results = useQuery({
     queryKey: ["students", "pick", q],
-    queryFn: () => students.list({ q, status: "ALL", size: 10 }),
+    queryFn: async () => {
+      // No internet: search the students kept on this device for the fee counter
+      const offline = () => {
+        const snapshot = snapshotOf(queryClient);
+        if (!snapshot) return null;
+        const items = searchSnapshot(snapshot, q);
+        return { items, page: 0, size: items.length, totalItems: items.length, totalPages: 1 } as Awaited<ReturnType<typeof students.list>>;
+      };
+      if (browserOffline()) {
+        const found = offline();
+        if (found) return found;
+      }
+      try {
+        return await students.list({ q, status: "ALL", size: 10 });
+      } catch (error) {
+        const found = isNetworkError(error) ? offline() : null;
+        if (found) return found;
+        throw error;
+      }
+    },
     enabled: q.trim().length >= 2,
+    networkMode: "always",
   });
   return (
     <div className="flex flex-col gap-2">

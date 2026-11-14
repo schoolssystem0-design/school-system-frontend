@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Schemas } from "@/lib/api/client";
 import { fileUrl } from "@/lib/api/client";
 import { GENDERS, UploadButton } from "@/features/people/shared";
+import { useNoInternet } from "@/features/shell/offline-bar";
 
 export type StudentFields = {
   name: string;
@@ -68,6 +69,7 @@ export function StudentForm({
   const set = (key: keyof StudentFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     onChange({ ...value, [key]: e.target.value });
   const photo = fileUrl(value.photoFileId);
+  const offline = useNoInternet();
   const shown = !privateHidden;
   return (
     <div className="flex flex-col gap-4">
@@ -80,12 +82,16 @@ export function StudentForm({
             No photo
           </div>
         )}
-        <UploadButton
-          purpose="PHOTO"
-          accept="image/png,image/jpeg,image/webp"
-          label={photo ? "Change photo" : "Upload photo"}
-          onUploaded={(fileId) => onChange({ ...value, photoFileId: fileId })}
-        />
+        {offline ? (
+          <p className="max-w-56 text-xs text-muted-foreground">No internet: add the photo from the student&apos;s profile later.</p>
+        ) : (
+          <UploadButton
+            purpose="PHOTO"
+            accept="image/png,image/jpeg,image/webp"
+            label={photo ? "Change photo" : "Upload photo"}
+            onUploaded={(fileId) => onChange({ ...value, photoFileId: fileId })}
+          />
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field id={id("name")} label="Full name">

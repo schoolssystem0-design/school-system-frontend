@@ -68,7 +68,9 @@ export const students = {
     size?: number;
   }) => api<Page<StudentRow>>(`/students?${query({ ...params, page: params.page ?? 0 })}`),
   get: (id: number) => api<Student>(`/students/${id}`),
-  admit: (body: Schemas["AdmitRequest"]) => api<Student>("/students", { method: "POST", body }),
+  /** With an idempotency key (offline admissions), sending the same admission again never admits the child twice. */
+  admit: (body: Schemas["AdmitRequest"], idempotencyKey?: string) =>
+    api<Student>("/students", { method: "POST", body, headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined }),
   update: (id: number, body: Schemas["UpdateRequest"]) => api<Student>(`/students/${id}`, { method: "PATCH", body }),
   suggestGr: () => api<{ grNo: string }>("/students/suggest-gr"),
   strength: () => api<Schemas["Strength"][]>("/students/strength"),

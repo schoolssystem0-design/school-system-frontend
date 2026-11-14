@@ -23,6 +23,11 @@ import { allocateOldestFirst, fromPaisa, isAmount, sumPaisa, toPaisa } from "@/l
 import { P } from "@/lib/permissions";
 import { today, useCan } from "@/features/people/shared";
 import { Balance, StudentPicker } from "./fee-shared";
+import { CloudOff } from "lucide-react";
+import { familyFromSnapshot, pendingPaisa, snapshotOf } from "@/lib/offline/fees";
+import { browserOffline, isNetworkError } from "@/lib/offline/queue";
+import { saveOrQueue } from "@/lib/offline/save";
+import { useNoInternet, useSyncState } from "@/features/shell/offline-bar";
 
 /**
  * Receive a fee payment (FR 10.7–10.10). One family can pay for all its children on one receipt. By default the
@@ -33,7 +38,7 @@ export function CollectPage() {
   const [student, setStudent] = useState<StudentRow | null>(null);
   const familyFromUrl = Number(params.get("familyId")) || null;
   const familyId = student?.familyId ?? familyFromUrl;
-  const [done, setDone] = useState<Payment | null>(null);
+  const [done, setDone] = useState<Done | null>(null);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -41,13 +46,24 @@ export function CollectPage() {
         description="Find the student; the payment is for the whole family unless you limit it to one child."
       />
       {done ? (
-        <PaymentDone
-          payment={done}
-          onNext={() => {
-            setDone(null);
-            setStudent(null);
-          }}
-        />
+        "payment" in done ? (
+          <PaymentDone
+            payment={done.payment}
+            onNext={() => {
+              setDone(null);
+              setStudent(null);
+            }}
+          />
+        ) : (
+          <OfflinePaymentDone
+            amount={done.amount}
+            who={done.who}
+            onNext={() => {
+              setDone(null);
+              setStudent(null);
+            }}
+          />
+        )
       ) : (
         <>
           <Card>
@@ -66,6 +82,23 @@ export function CollectPage() {
   );
 }
 
+type Done = { payment: Payment } | { amount: string; who: string };
+
+/** Loads from the server, or from the snapshot kept on this device when there is no internet. */
+async function withSnapshot<T>(online: () => Promise<T>, offline: () => T | null | undefined): Promise<T> {
+  if (browserOffline()) {
+    const kept = offline();
+    if (kept) return kept;
+  }
+  try {
+    return await online();
+  } catch (error) {
+    const kept = isNetworkError(error) ? offline() : null;
+    if (kept) return kept;
+    throw error;
+  }
+}
+
 function PaymentForm({
   familyId,
   student,
@@ -73,16 +106,29 @@ function PaymentForm({
 }: {
   familyId: number;
   student: StudentRow | null;
-  onDone: (p: Payment) => void;
+  onDone: (done: Done) => void;
 }) {
   const queryClient = useQueryClient();
+  const offline = useNoInternet();
+  const sync = useSyncState();
   const [onlyStudent, setOnlyStudent] = useState(false);
   const studentId = onlyStudent && student ? (student.id ?? undefined) : undefined;
-  const ledger = useQuery({ queryKey: ["fees", "family-ledger", familyId], queryFn: () => fees.familyLedger(familyId) });
+  const fromSnapshot = () => {
+    const snapshot = snapshotOf(queryClient);
+    return snapshot ? familyFromSnapshot(snapshot, familyId, studentId) : null;
+  };
+  const ledger = useQuery({
+    queryKey: ["fees", "family-ledger", familyId],
+    queryFn: () => withSnapshot(() => fees.familyLedger(familyId), () => fromSnapshot()?.ledger),
+    networkMode: "always",
+  });
   const lines = useQuery({
     queryKey: ["fees", "open-lines", familyId, studentId],
-    queryFn: () => fees.openLines(familyId, studentId),
+    queryFn: () => withSnapshot(() => fees.openLines(familyId, studentId), () => fromSnapshot()?.lines),
+    networkMode: "always",
   });
+  // Payments for this family taken offline and not sent yet
+  const pending = pendingPaisa(sync.changes, familyId);
   const accounts = useQuery({ queryKey: ["fees", "accounts"], queryFn: fees.accounts });
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("CASH");
@@ -100,8 +146,9 @@ function PaymentForm({
     paisa,
     open.map((l) => toPaisa(l.balance)),
   );
-  const allocation = open.map((l, i) => (manual ? (chosen[l.billLineId ?? 0] ?? "") : fromPaisa(auto[i])));
-  const allocationOk = !manual || allocation.every((a, i) => a === "" || (isAmount(a, { allowZero: true }) && toPaisa(a) <= toPaisa(open[i].balance)));
+  const choosing = manual && !offline;
+  const allocation = open.map((l, i) => (choosing ? (chosen[l.billLineId ?? 0] ?? "") : fromPaisa(auto[i])));
+  const allocationOk = !choosing || allocation.every((a, i) => a === "" || (isAmount(a, { allowZero: true }) && toPaisa(a) <= toPaisa(open[i].balance)));
   const allocated = allocationOk ? sumPaisa(allocation.map((a) => (a === "" ? "0" : a))) : 0n;
   const advance = paisa - allocated;
   const account = accountId === "" ? accounts.data?.find((a) => a.subtype === (method === "CASH" ? "CASH" : "BANK"))?.id : accountId;
@@ -115,7 +162,7 @@ function PaymentForm({
     paymentDate: date,
     reference: reference.trim() || undefined,
     remarks: remarks.trim() || undefined,
-    allocations: manual
+    allocations: choosing
       ? open
           .map((l, i) => ({ billLineId: l.billLineId ?? 0, amount: allocation[i] }))
           .filter((a) => a.amount !== "" && toPaisa(a.amount) > 0n)
@@ -125,19 +172,37 @@ function PaymentForm({
   // One key per distinct payment attempt: a retry of the same attempt can never create a second payment.
   const idempotencyKey = useMemo(() => newKey(), [payloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const who = student ? `${student.name} (GR ${student.grNo})` : `family ${familyId}`;
   const pay = useMutation({
-    mutationFn: () => fees.pay(payload, idempotencyKey),
-    onSuccess: (p) => {
+    mutationFn: () =>
+      saveOrQueue(() => fees.pay(payload, idempotencyKey), {
+        kind: "payment",
+        label: `Fee payment · ${formatMoney(payload.amount)} · ${who}`,
+        method: "POST",
+        path: "/fees/payments",
+        body: payload,
+        idempotencyKey,
+        meta: { familyId, amount: payload.amount },
+      }),
+    onSuccess: (saved) => {
+      if (!saved.sent) {
+        onDone({ amount: payload.amount, who });
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["fees"] });
-      onDone(p);
+      onDone({ payment: saved.result });
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   if (ledger.isPending || lines.isPending) return <Loading />;
-  if (ledger.isError) return <ErrorState error={ledger.error} onRetry={() => ledger.refetch()} />;
-  if (lines.isError) return <ErrorState error={lines.error} onRetry={() => lines.refetch()} />;
-  const due = toPaisa(ledger.data.balance);
+  if (ledger.isError && !ledger.data) {
+    return isNetworkError(ledger.error) ? <NoSnapshot /> : <ErrorState error={ledger.error} onRetry={() => ledger.refetch()} />;
+  }
+  if (lines.isError && !lines.data) {
+    return isNetworkError(lines.error) ? <NoSnapshot /> : <ErrorState error={lines.error} onRetry={() => lines.refetch()} />;
+  }
+  const due = toPaisa(ledger.data.balance) - pending;
   const canSubmit = amountOk && allocationOk && advance >= 0n && account != null && !pay.isPending;
 
   return (
@@ -155,6 +220,7 @@ function PaymentForm({
             <CardDescription>
               Total due <Balance value={ledger.data.owed} />
               {toPaisa(ledger.data.credit) > 0n && <> · advance held {formatMoney(ledger.data.credit)}</>}
+              {pending > 0n && <> · {formatMoney(fromPaisa(pending))} paid offline, waiting to be sent</>}
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -175,11 +241,16 @@ function PaymentForm({
               Only for {student.name} (the payment and any advance stay with this child)
             </label>
           )}
+          {offline && (
+            <p className="text-sm text-muted-foreground">
+              No internet: this payment will settle the oldest dues first and get its receipt number when it is sent.
+            </p>
+          )}
           {open.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nothing is due. A payment now is kept as advance for future bills.</p>
           ) : (
             <>
-              <label className="flex items-center gap-2 text-sm">
+              <label className={offline ? "hidden" : "flex items-center gap-2 text-sm"}>
                 <input
                   type="checkbox"
                   checked={manual}
@@ -192,7 +263,7 @@ function PaymentForm({
                 />
                 Choose which fees this payment settles (otherwise the oldest dues are settled first)
               </label>
-              <OpenLinesTable lines={open} allocation={allocation} manual={manual} onChange={(id, v) => setChosen((c) => ({ ...c, [id]: v }))} />
+              <OpenLinesTable lines={open} allocation={allocation} manual={choosing} onChange={(id, v) => setChosen((c) => ({ ...c, [id]: v }))} />
             </>
           )}
         </CardContent>
@@ -241,7 +312,7 @@ function PaymentForm({
               {advance > 0n && <> · {formatMoney(fromPaisa(advance))} kept as advance</>}
             </p>
           )}
-          {manual && (!allocationOk || advance < 0n) && (
+          {choosing && (!allocationOk || advance < 0n) && (
             <Alert variant="destructive">
               <AlertDescription>
                 {advance < 0n ? "The chosen amounts are more than the payment." : "A chosen amount is more than what is owed on that line."}
@@ -313,6 +384,43 @@ function OpenLinesTable({
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+function NoSnapshot() {
+  return (
+    <Alert>
+      <CloudOff aria-hidden />
+      <AlertTitle>No internet, and this family&apos;s fees are not saved on this device</AlertTitle>
+      <AlertDescription>
+        Fee details are kept on the device automatically while online (for staff who collect fees). Try again when the
+        internet is back.
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function OfflinePaymentDone({ amount, who, onNext }: { amount: string; who: string; onNext: () => void }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-4 pt-6">
+        <Alert>
+          <CloudOff aria-hidden />
+          <AlertTitle>
+            Saved on this device: {formatMoney(amount)} for {who}
+          </AlertTitle>
+          <AlertDescription>
+            There is no internet. The payment will be sent automatically when the connection is back; the receipt number,
+            the printed receipt and the family&apos;s receipt SMS come then. It will never be recorded twice.
+          </AlertDescription>
+        </Alert>
+        <div>
+          <Button variant="outline" onClick={onNext}>
+            Next payment
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

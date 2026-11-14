@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { logout } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 
 const IDLE_MINUTES = Number(process.env.NEXT_PUBLIC_SESSION_IDLE_MINUTES) || 10;
 
@@ -32,10 +33,17 @@ export function useIdleLogout(options: { enabled: boolean; signInPath: string })
       signingOut.current = true;
       try {
         await logout();
-      } finally {
-        queryClient.clear();
-        router.replace(signInPath);
+      } catch (error) {
+        if (!(error instanceof ApiError)) {
+          // No internet: signing in again would be impossible until it is back, so stay signed in and keep the
+          // offline work going. The server ends its own idle session; the app asks to sign in once online.
+          signingOut.current = false;
+          schedule();
+          return;
+        }
       }
+      queryClient.clear();
+      router.replace(signInPath);
     };
 
     const schedule = () => {

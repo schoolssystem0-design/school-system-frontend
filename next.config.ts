@@ -11,6 +11,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Offline mode: navigations to prefetched pages wait for the connection instead of failing (see lib/offline).
+  experimental: {
+    useOffline: true,
+  },
   poweredByHeader: false,
   turbopack: {
     rules: {
@@ -21,7 +25,17 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // The offline service worker: always fetch the latest version
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+    ];
   },
 };
 

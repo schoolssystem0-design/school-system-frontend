@@ -56,6 +56,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SchoolLogo, UserAvatar } from "@/components/app/avatars";
 import { TrialBanner } from "./trial-banner";
+import { OfflineBar, OfflinePill, useOfflineSync, useSyncState } from "./offline-bar";
+import { useCacheRestored } from "@/lib/offline/restored";
+import { offlineQueue } from "@/lib/offline/queue";
+import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { PoweredBy } from "@/components/app/brand";
 import { NativeSelect } from "@/components/app/native-select";
 import { Button } from "@/components/ui/button";
@@ -177,6 +181,20 @@ export function useMe() {
 
 /** Protected layout for the school portal: loads the signed-in user, sends anyone else to sign-in. */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  // Waits for the data saved on this device, so the portal also opens offline.
+  const restored = useCacheRestored();
+  if (!restored) {
+    return (
+      <div className="flex flex-1 items-center justify-center" role="status">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
+        <span className="sr-only">Loading</span>
+      </div>
+    );
+  }
+  return <AppShellContent>{children}</AppShellContent>;
+}
+
+function AppShellContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const me = useMe();
@@ -205,7 +223,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (me.isError || !me.data.school) {
+  // Offline with saved data: keep working with it (a failed refresh is not a reason to stop)
+  if ((me.isError && !me.data) || !me.data?.school) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center" role="alert">
         <p>The server could not be reached.</p>
@@ -222,6 +241,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col">
           {me.data.superAdmin && <SuperAdminBanner schoolName={me.data.school.name ?? ""} />}
           {me.data.school.trialEndsAt && <TrialBanner endsAt={me.data.school.trialEndsAt} />}
+          <OfflineSync me={me.data} />
+          <OfflineBar />
           <div className="flex flex-1">
             <aside className="sticky top-0 hidden h-svh w-68 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex print:hidden">
               <SidebarContent me={me.data} pathname={pathname} />
@@ -238,6 +259,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </StepUpProvider>
     </YearProvider>
   );
+}
+
+/** Runs offline syncing and preparation for the signed-in user (renders nothing). */
+function OfflineSync({ me }: { me: Me }) {
+  useOfflineSync(me);
+  return null;
 }
 
 /** Two-letter initials for the avatar bubble. */
@@ -377,9 +404,15 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const sync = useSyncState();
+  const unsent = sync.changes.length;
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const signOut = useMutation({
     mutationFn: logout,
-    onSettled: () => {
+    onSettled: async () => {
+      // Signing out forgets this device's offline data for the user
+      await offlineQueue.clear();
+      navigator.serviceWorker?.controller?.postMessage({ type: "sign-out" });
       queryClient.clear();
       router.replace(me.superAdmin ? "/platform/sign-in" : "/sign-in");
     },
@@ -410,6 +443,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
             </span>
           )}
           <div className="ms-auto flex items-center gap-2 sm:gap-3">
+            <OfflinePill />
             <div className="md:hidden">
               <YearSwitcher />
             </div>
@@ -442,7 +476,7 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
               variant="outline"
               size="sm"
               className="h-9 rounded-full px-3"
-              onClick={() => signOut.mutate()}
+              onClick={() => (unsent > 0 ? setConfirmSignOut(true) : signOut.mutate())}
               disabled={signOut.isPending}
               aria-label="Sign out"
             >
@@ -461,6 +495,16 @@ function Header({ me, pathname }: { me: Me; pathname: string }) {
       {photoOpen && <ProfilePhotoDialog me={me} onClose={() => setPhotoOpen(false)} />}
       {/* Outside the header: its backdrop blur would otherwise trap this fixed overlay inside the header box. */}
       {menuOpen && <MobileDrawer me={me} pathname={pathname} onClose={closeMenu} />}
+      <ConfirmDialog
+        open={confirmSignOut}
+        onOpenChange={setConfirmSignOut}
+        title="Changes not sent yet"
+        description={`${unsent} ${unsent === 1 ? "change was" : "changes were"} made offline and ${unsent === 1 ? "has" : "have"} not reached the server yet. Signing out deletes ${unsent === 1 ? "it" : "them"} from this device. Wait for the internet to send ${unsent === 1 ? "it" : "them"}, or sign out anyway.`}
+        confirmLabel="Sign out and delete"
+        destructive
+        pending={signOut.isPending}
+        onConfirm={() => signOut.mutate()}
+      />
     </>
   );
 }

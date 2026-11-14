@@ -19,6 +19,10 @@ import { attendance, STATUSES, type Register } from "@/lib/api/attendance";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { CloudOff } from "lucide-react";
+import { isNetworkError } from "@/lib/offline/queue";
+import { saveOrQueue } from "@/lib/offline/save";
+import { useSyncState } from "@/features/shell/offline-bar";
 import { SectionSelect, today, useCan } from "@/features/people/shared";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
@@ -72,14 +76,34 @@ export function RegisterPage() {
 
 function RegisterLoader({ sectionId, date }: { sectionId: number; date: string }) {
   const register = useQuery({ queryKey: ["attendance", "register", sectionId, date], queryFn: () => attendance.register(sectionId, date) });
+  if (register.isPending && register.fetchStatus === "paused") return <NotOnDevice />;
   if (register.isPending) return <Loading />;
-  if (register.isError) return <ErrorState error={register.error} onRetry={() => register.refetch()} />;
+  // Offline: the copy saved on this device is used when it cannot be refreshed
+  if (register.isError && !register.data) {
+    return isNetworkError(register.error) ? <NotOnDevice /> : <ErrorState error={register.error} onRetry={() => register.refetch()} />;
+  }
   return <RegisterGrid key={register.dataUpdatedAt} register={register.data} />;
+}
+
+function NotOnDevice() {
+  return (
+    <Alert>
+      <CloudOff aria-hidden />
+      <AlertTitle>No internet, and this register is not saved on this device</AlertTitle>
+      <AlertDescription>
+        Registers for today are kept on the device automatically while online. Choose today&apos;s date, or open this register
+        again when the internet is back.
+      </AlertDescription>
+    </Alert>
+  );
 }
 
 function RegisterGrid({ register }: { register: Register }) {
   const can = useCan();
   const queryClient = useQueryClient();
+  const sync = useSyncState();
+  const path = `/attendance/registers/${register.sectionId}?date=${register.date}`;
+  const waiting = sync.changes.find((c) => c.path === path);
   const initial = Object.fromEntries((register.rows ?? []).map((r) => [r.studentId ?? 0, r.status ?? "P"]));
   const [statuses, setStatuses] = useState<Record<number, string>>(initial);
   const [reason, setReason] = useState("");
@@ -87,12 +111,30 @@ function RegisterGrid({ register }: { register: Register }) {
   const earlier = register.date !== undefined && register.date < today();
   const needsReason = !register.workingDay || (earlier && changedSaved);
   const save = useMutation({
-    mutationFn: () =>
-      attendance.saveRegister(register.sectionId ?? 0, register.date ?? "", {
+    mutationFn: () => {
+      const body = {
         marks: (register.rows ?? []).map((r) => ({ studentId: r.studentId ?? 0, status: statuses[r.studentId ?? 0] })),
         reason: reason.trim() || undefined,
-      }),
-    onSuccess: (r) => {
+      };
+      return saveOrQueue(() => attendance.saveRegister(register.sectionId ?? 0, register.date ?? "", body), {
+        kind: "attendance",
+        label: `Attendance · ${register.sectionLabel} · ${formatDate(register.date)}`,
+        method: "PUT",
+        path,
+        body,
+        meta: { sectionId: register.sectionId, date: register.date },
+      });
+    },
+    onSuccess: (saved) => {
+      if (!saved.sent) {
+        // Show the offline marks when the register is opened again on this device
+        queryClient.setQueryData<Register>(["attendance", "register", register.sectionId, register.date], (old) =>
+          old ? { ...old, rows: (old.rows ?? []).map((r) => ({ ...r, status: statuses[r.studentId ?? 0] ?? r.status })) } : old,
+        );
+        toast.success("Saved on this device. It will be sent when the internet is back.");
+        return;
+      }
+      const r = saved.result;
       void queryClient.invalidateQueries({ queryKey: ["attendance"] });
       toast.success(`Register saved: ${r.totals?.A ?? 0} absent, ${r.totals?.L ?? 0} late`);
     },
@@ -119,6 +161,17 @@ function RegisterGrid({ register }: { register: Register }) {
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {waiting && (
+          <Alert>
+            <CloudOff aria-hidden />
+            <AlertTitle>{waiting.state === "failed" ? "Saved offline, but the server did not accept it" : "Saved on this device"}</AlertTitle>
+            <AlertDescription>
+              {waiting.state === "failed"
+                ? waiting.error
+                : "This register will be sent automatically when the internet is back (absence SMS go out then)."}
+            </AlertDescription>
+          </Alert>
+        )}
         {!register.workingDay && (
           <Alert variant="destructive">
             <AlertTitle>The school is closed on this day</AlertTitle>

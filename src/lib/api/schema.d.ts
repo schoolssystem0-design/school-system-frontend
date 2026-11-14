@@ -1988,6 +1988,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/families/offline-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["offlineList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/families/{id}": {
         parameters: {
             query?: never;
@@ -2380,6 +2396,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["messages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fees/offline-snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["offlineSnapshot"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6179,6 +6211,12 @@ export interface components {
             /** Format: int64 */
             version?: number;
         };
+        FeeSnapshot: {
+            /** Format: date-time */
+            at?: string;
+            families?: components["schemas"]["OfflineFamily"][];
+            students?: components["schemas"]["OfflineStudent"][];
+        };
         FileInfo: {
             contentType?: string;
             /** Format: int64 */
@@ -6646,6 +6684,31 @@ export interface components {
             /** Format: int64 */
             userId?: number;
             username?: string;
+        };
+        OfflineFamily: {
+            balance?: string;
+            credit?: string;
+            /** Format: int64 */
+            familyId?: number;
+            lines?: components["schemas"]["OpenLine"][];
+            owed?: string;
+        };
+        OfflineStudent: {
+            className?: string;
+            /** Format: int64 */
+            familyId?: number;
+            familyNo?: string;
+            fatherName?: string;
+            fatherPhone?: string;
+            gender?: string;
+            grNo?: string;
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            /** Format: int64 */
+            sectionId?: number;
+            sectionName?: string;
+            status?: string;
         };
         OpenLine: {
             adjusted?: string;
@@ -12138,6 +12201,26 @@ export interface operations {
             };
         };
     };
+    offlineList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FamilyRow"][];
+                };
+            };
+        };
+    };
     get_3: {
         parameters: {
             query?: never;
@@ -12880,6 +12963,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Queued"][];
+                };
+            };
+        };
+    };
+    offlineSnapshot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FeeSnapshot"];
                 };
             };
         };
@@ -16224,7 +16327,9 @@ export interface operations {
     admit: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };

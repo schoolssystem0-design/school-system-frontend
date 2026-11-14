@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Empty, ErrorState, Loading } from "@/components/app/data-state";
@@ -22,6 +22,11 @@ import { testMarks, type TestSheet } from "@/lib/api/test-marks";
 import { formatDate } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { CloudOff } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { isNetworkError } from "@/lib/offline/queue";
+import { saveOrQueue } from "@/lib/offline/save";
+import { useSyncState } from "@/features/shell/offline-bar";
 import { SectionSelect, today, useCan } from "@/features/people/shared";
 import { ExportBar } from "@/features/reports/export-bar";
 
@@ -66,8 +71,11 @@ export function TestMarksPage() {
 
 function TestList({ sectionId }: { sectionId: number }) {
   const list = useQuery({ queryKey: ["test-marks", "list", sectionId], queryFn: () => testMarks.list(sectionId) });
+  if (list.isPending && list.fetchStatus === "paused") return <OfflineNotSaved what="The tests of this section are" />;
   if (list.isPending) return <Loading />;
-  if (list.isError) return <ErrorState error={list.error} onRetry={() => list.refetch()} />;
+  if (list.isError && !list.data) {
+    return isNetworkError(list.error) ? <OfflineNotSaved what="The tests of this section are" /> : <ErrorState error={list.error} onRetry={() => list.refetch()} />;
+  }
   if (list.data.length === 0) return <Empty title="No tests in this section yet" />;
   return (
     <Table>
@@ -85,7 +93,7 @@ function TestList({ sectionId }: { sectionId: number }) {
           <TableRow key={t.id}>
             <TableCell className="whitespace-nowrap">{formatDate(t.testDate)}</TableCell>
             <TableCell>
-              <Link href={`/app/marks/${t.id}`} className="font-medium hover:underline">{t.name}</Link>
+              <Link href={`/app/marks/test?id=${t.id}`} className="font-medium hover:underline">{t.name}</Link>
             </TableCell>
             <TableCell>{t.subjectName}</TableCell>
             <TableCell className="text-right tabular-nums">{t.maxMarks}</TableCell>
@@ -110,7 +118,7 @@ function NewTestDialog({ sectionId, onClose }: { sectionId: number; onClose: () 
     onSuccess: (sheet) => {
       void queryClient.invalidateQueries({ queryKey: ["test-marks"] });
       onClose();
-      router.push(`/app/marks/${sheet.test?.id}`);
+      router.push(`/app/marks/test?id=${sheet.test?.id}`);
     },
     onError,
   });
@@ -152,11 +160,30 @@ function NewTestDialog({ sectionId, onClose }: { sectionId: number; onClose: () 
 
 /** One test: type the marks and see the positions. */
 export function TestSheetPage() {
-  const id = Number(useParams<{ id: string }>().id);
+  // /app/marks/test?id=12 (a fixed page that opens offline); the older /app/marks/12 still works
+  const params = useParams<{ id?: string }>();
+  const search = useSearchParams();
+  const id = Number(search.get("id") ?? params.id);
   const sheet = useQuery({ queryKey: ["test-marks", "sheet", id], queryFn: () => testMarks.sheet(id) });
+  if (sheet.isPending && sheet.fetchStatus === "paused") return <OfflineNotSaved what="This mark sheet is" />;
   if (sheet.isPending) return <Loading />;
-  if (sheet.isError) return <ErrorState error={sheet.error} onRetry={() => sheet.refetch()} />;
+  // Offline: the copy saved on this device is used when it cannot be refreshed
+  if (sheet.isError && !sheet.data) {
+    return isNetworkError(sheet.error) ? <OfflineNotSaved what="This mark sheet is" /> : <ErrorState error={sheet.error} onRetry={() => sheet.refetch()} />;
+  }
   return <Sheet key={sheet.dataUpdatedAt} sheet={sheet.data} />;
+}
+
+function OfflineNotSaved({ what }: { what: string }) {
+  return (
+    <Alert>
+      <CloudOff aria-hidden />
+      <AlertTitle>No internet: {what.toLowerCase()} not saved on this device</AlertTitle>
+      <AlertDescription>
+        Tests from the last two weeks are kept on the device automatically while online. Open this again when the internet is back.
+      </AlertDescription>
+    </Alert>
+  );
 }
 
 type Entry = { value: string; absent: boolean };
@@ -184,16 +211,44 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
     const e = entries[r.studentId ?? 0];
     return e.absent !== (r.absent ?? false) || (!e.absent && Number(e.value) !== Number(r.obtained)) || (!e.absent && e.value.trim() === "");
   });
+  const sync = useSyncState();
+  const path = `/test-marks/${id}/marks`;
+  const waiting = sync.changes.find((c) => c.path === path);
   const save = useMutation({
-    mutationFn: () =>
-      testMarks.save(id, {
+    mutationFn: () => {
+      const body = {
         marks: rows.map((r) => {
           const e = entries[r.studentId ?? 0];
           return { studentId: r.studentId ?? 0, absent: e.absent, obtained: !e.absent && e.value.trim() ? e.value.trim() : undefined };
         }),
         reason: reason.trim() || undefined,
-      }),
-    onSuccess: () => {
+      };
+      return saveOrQueue(() => testMarks.save(id, body), {
+        kind: "marks",
+        label: `Marks · ${test?.name} · ${test?.subjectName} · ${test?.sectionLabel}`,
+        method: "PUT",
+        path,
+        body,
+        meta: { testId: id },
+      });
+    },
+    onSuccess: (saved) => {
+      if (!saved.sent) {
+        // Show the offline marks when the sheet is opened again on this device
+        queryClient.setQueryData<TestSheet>(["test-marks", "sheet", id], (old) =>
+          old
+            ? {
+                ...old,
+                rows: (old.rows ?? []).map((r) => {
+                  const e = entries[r.studentId ?? 0];
+                  return e ? { ...r, absent: e.absent, obtained: !e.absent && e.value.trim() ? e.value.trim() : undefined } : r;
+                }),
+              }
+            : old,
+        );
+        toast.success("Saved on this device. The marks will be sent when the internet is back.");
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["test-marks"] });
       toast.success("Marks saved");
     },
@@ -253,6 +308,15 @@ function Sheet({ sheet }: { sheet: TestSheet }) {
             <CardDescription>{notEntered} not entered yet. Positions update when you save.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {waiting && (
+              <Alert variant={waiting.state === "failed" ? "destructive" : "default"}>
+                <CloudOff aria-hidden />
+                <AlertTitle>{waiting.state === "failed" ? "Saved offline, but the server did not accept it" : "Saved on this device"}</AlertTitle>
+                <AlertDescription>
+                  {waiting.state === "failed" ? waiting.error : "These marks will be sent automatically when the internet is back."}
+                </AlertDescription>
+              </Alert>
+            )}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -410,7 +474,7 @@ export function StudentTestMarks({ studentId }: { studentId: number }) {
         {rows.data.map((r) => (
           <TableRow key={r.testId}>
             <TableCell className="whitespace-nowrap">{formatDate(r.testDate)}</TableCell>
-            <TableCell><Link href={`/app/marks/${r.testId}`} className="font-medium hover:underline">{r.testName}</Link></TableCell>
+            <TableCell><Link href={`/app/marks/test?id=${r.testId}`} className="font-medium hover:underline">{r.testName}</Link></TableCell>
             <TableCell>{r.subjectName}</TableCell>
             <TableCell>{r.sectionLabel}</TableCell>
             <TableCell className="text-right tabular-nums">{r.absent ? "Absent" : `${r.obtained}/${r.maxMarks}`}</TableCell>
