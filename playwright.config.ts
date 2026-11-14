@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * End-to-end tests against a running API. Locally: start the API with
- * `cd backend && mvn spring-boot:test-run -Dspring-boot.run.main-class=com.selectcode.sms.LocalDevApplication`
+ * `cd backend && mvn spring-boot:test-run -Dspring-boot.run.main-class=com.tirvextech.sms.LocalDevApplication`
  * then `npm run e2e` (builds and starts the app on :3000). To test staging, set E2E_BASE_URL.
  */
 export default defineConfig({

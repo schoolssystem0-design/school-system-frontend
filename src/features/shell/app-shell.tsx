@@ -56,6 +56,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SchoolLogo, UserAvatar } from "@/components/app/avatars";
 import { TrialBanner } from "./trial-banner";
+import { PoweredBy } from "@/components/app/brand";
 import { NativeSelect } from "@/components/app/native-select";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -297,6 +298,9 @@ function SidebarContent({ me, pathname, onNavigate }: { me: Me; pathname: string
           );
         })}
       </nav>
+      <div className="border-t border-sidebar-border px-5 py-3">
+        <PoweredBy dark />
+      </div>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BrandLogo, PoweredBy } from "@/components/app/brand";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignInForm } from "@/features/auth/sign-in-form";
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = { title: "Sign in" };
 
 export default function SignInPage() {
   return (
-    <main className="flex flex-1 items-center justify-center bg-muted/40 p-4">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-muted/40 p-4">
+      <BrandLogo className="h-12 sm:h-14" />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>
@@ -34,6 +36,7 @@ export default function SignInPage() {
           </p>
         </CardContent>
       </Card>
+      <PoweredBy />
     </main>
   );
 }

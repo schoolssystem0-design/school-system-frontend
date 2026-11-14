@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, FileBarChart, LayoutGrid, Loader2, LogOut, ScrollText, ShieldCheck } from "lucide-react";
+import { Building2, FileBarChart, LayoutGrid, Loader2, LogOut, ScrollText } from "lucide-react";
+import { BrandIcon } from "@/components/app/brand";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -72,12 +73,10 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b-2 border-highlight bg-navy text-white shadow-lg shadow-navy/20 print:hidden">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
           <span className="flex items-center gap-2.5 font-semibold">
-            <span aria-hidden className="flex size-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/40">
-              <ShieldCheck className="size-5" />
-            </span>
+            <BrandIcon className="size-9 rounded-xl shadow-md shadow-black/30 ring-1 ring-white/15" />
             <span className="leading-tight">
               Platform console
-              <span className="block text-[11px] font-normal text-white/60">System owner</span>
+              <span className="block text-[11px] font-normal text-white/60">Tirvex Tech · System owner</span>
             </span>
           </span>
           <nav

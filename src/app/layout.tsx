@@ -6,8 +6,10 @@ import "./globals.css";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "School Management System", template: "%s | School Management System" },
-  description: "School management platform",
+  title: { default: "School Management System | Tirvex Tech", template: "%s | Tirvex Tech" },
+  description: "School Management System by Tirvex Tech",
+  applicationName: "Tirvex Tech School Management System",
+  authors: [{ name: "Tirvex Tech" }],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
