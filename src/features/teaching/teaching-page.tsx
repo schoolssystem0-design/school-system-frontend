@@ -240,6 +240,8 @@ function Timetable({ yearId }: { yearId: number }) {
     queryKey: ["teaching", yearId, "timetable", sectionId],
     queryFn: () => teaching.timetable(yearId, { sectionId: Number(sectionId) }),
     enabled: sectionId !== "",
+    // Always load fresh when a section is opened: the editor starts from this data and keeps the user's edits after.
+    staleTime: 0,
   });
   const days = DAYS.map((d, i) => ({ name: d, weekday: i + 1 })).filter((d) => (week.data?.[d.name] ?? "FULL") !== "OFF");
   return (
@@ -249,13 +251,13 @@ function Timetable({ yearId }: { yearId: number }) {
       </Field>
       {sectionId === "" ? (
         <Empty title="Choose a section" />
-      ) : periods.isPending || week.isPending ? (
+      ) : periods.isPending || week.isPending || !periods.isFetchedAfterMount ? (
         <Loading />
       ) : periods.isError ? (
         <ErrorState error={periods.error} onRetry={() => periods.refetch()} />
       ) : (
         <TimetableEditor
-          key={`${sectionId}-${periods.dataUpdatedAt}`}
+          key={sectionId}
           yearId={yearId}
           sectionId={Number(sectionId)}
           days={days}
@@ -380,26 +382,33 @@ function TimetableEditor({
     Object.fromEntries(initial.map((p) => [`${p.weekday}:${p.periodNo}`, { subjectId: p.subjectId ?? "", staffId: p.staffId ?? "" }])),
   );
   const manage = can(P.ACADEMICS_MANAGE);
+  const numbers = Array.from({ length: count }, (_, i) => i + 1);
   const save = useMutation({
-    mutationFn: () =>
-      teaching.saveTimetable(
-        yearId,
-        sectionId,
-        Object.entries(cells)
-          .filter(([key, c]) => (c.subjectId !== "" || c.staffId !== "") && Number(key.split(":")[1]) <= count)
-          .map(([key, c]) => {
-            const [weekday, periodNo] = key.split(":").map(Number);
-            const t = times[periodNo];
-            return {
-              weekday,
-              periodNo,
-              startTime: t?.start ? `${t.start}:00` : undefined,
-              endTime: t?.end ? `${t.end}:00` : undefined,
-              subjectId: c.subjectId === "" ? undefined : c.subjectId,
-              staffId: c.staffId === "" ? undefined : c.staffId,
-            };
-          }),
-      ),
+    mutationFn: () => {
+      const timeOf = (periodNo: number) => {
+        const t = times[periodNo];
+        return { startTime: t?.start ? `${t.start}:00` : undefined, endTime: t?.end ? `${t.end}:00` : undefined };
+      };
+      const lessons = Object.entries(cells)
+        .filter(([key, c]) => (c.subjectId !== "" || c.staffId !== "") && Number(key.split(":")[1]) <= count)
+        .map(([key, c]) => {
+          const [weekday, periodNo] = key.split(":").map(Number);
+          return {
+            weekday,
+            periodNo,
+            ...timeOf(periodNo),
+            subjectId: c.subjectId === "" ? undefined : c.subjectId,
+            staffId: c.staffId === "" ? undefined : c.staffId,
+          };
+        });
+      // A period with bell times but no lesson on any day yet (e.g. a free period) is kept as one empty slot,
+      // otherwise its times would be lost.
+      const withLessons = new Set(lessons.map((l) => l.periodNo));
+      const freePeriods = numbers
+        .filter((n) => !withLessons.has(n) && (times[n]?.start || times[n]?.end) && days.length > 0)
+        .map((n) => ({ weekday: days[0].weekday, periodNo: n, ...timeOf(n) }));
+      return teaching.saveTimetable(yearId, sectionId, [...lessons, ...freePeriods]);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["teaching", yearId, "timetable"] });
       toast.success("Timetable saved");
@@ -408,10 +417,16 @@ function TimetableEditor({
   });
   const setCell = (key: string, patch: Partial<Cell>) =>
     setCells((c) => ({ ...c, [key]: { ...(c[key] ?? { subjectId: "", staffId: "" }), ...patch } }));
-  const numbers = Array.from({ length: count }, (_, i) => i + 1);
 
   return (
     <div className="flex flex-col gap-4">
+      {subjects.data?.length === 0 && (
+        <Alert>
+          <AlertDescription>
+            No subjects are set for this class in this year, so the subject lists are empty. Add them under School setup → Subjects &amp; marks.
+          </AlertDescription>
+        </Alert>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Weekly timetable</CardTitle>
