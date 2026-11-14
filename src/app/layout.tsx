@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -10,7 +10,10 @@ export const metadata: Metadata = {
   description: "School Management System by Tirvex Tech",
   applicationName: "Tirvex Tech School Management System",
   authors: [{ name: "Tirvex Tech" }],
+  appleWebApp: { capable: true, title: "Tirvex School", statusBarStyle: "black-translucent" },
 };
+
+export const viewport: Viewport = { themeColor: "#21232e" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

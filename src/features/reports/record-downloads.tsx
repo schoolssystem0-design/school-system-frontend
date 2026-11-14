@@ -4,7 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { ChevronDown, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { apiBlob, errorMessage, openBlob } from "@/lib/api/client";
 import { P } from "@/lib/permissions";
 import { useCan } from "@/features/people/shared";
@@ -17,19 +22,53 @@ export function useCanDownloadRecords() {
 }
 
 /** A button that downloads one report as PDF or Excel (for the academic year selected at the top). */
-export function DownloadMenu({ label, path, fileName }: { label: string; path: string; fileName: string }) {
+export function DownloadMenu({
+  label,
+  path,
+  fileName,
+  compact,
+}: {
+  label: string;
+  path: string;
+  fileName: string;
+  /** A small icon button (for table rows); `label` becomes its accessible name and tooltip. */
+  compact?: boolean;
+}) {
   const save = useMutation({
     mutationFn: async (format: "pdf" | "xlsx") => {
-      const blob = await apiBlob(`${path}${path.includes("?") ? "&" : "?"}format=${format}`, {}, format === "pdf" ? "application/pdf" : XLSX_TYPE);
+      const blob = await apiBlob(
+        `${path}${path.includes("?") ? "&" : "?"}format=${format}`,
+        {},
+        format === "pdf" ? "application/pdf" : XLSX_TYPE,
+      );
       openBlob(blob, `${fileName}.${format}`);
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" disabled={save.isPending} />}>
-        <Download aria-hidden /> {save.isPending ? "Preparing…" : label} <ChevronDown className="opacity-60" aria-hidden />
-      </DropdownMenuTrigger>
+      {compact ? (
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={label}
+              title={label}
+              disabled={save.isPending}
+            />
+          }
+        >
+          <Download aria-hidden />
+        </DropdownMenuTrigger>
+      ) : (
+        <DropdownMenuTrigger
+          render={<Button variant="outline" disabled={save.isPending} />}
+        >
+          <Download aria-hidden /> {save.isPending ? "Preparing…" : label}{" "}
+          <ChevronDown className="opacity-60" aria-hidden />
+        </DropdownMenuTrigger>
+      )}
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => save.mutate("pdf")}>
           <FileText aria-hidden /> PDF (print or share)
@@ -43,7 +82,13 @@ export function DownloadMenu({ label, path, fileName }: { label: string; path: s
 }
 
 /** One student's whole year: details, family, classes, attendance, marks, results and fees. */
-export function StudentRecordDownload({ studentId, grNo }: { studentId: number; grNo?: string }) {
+export function StudentRecordDownload({
+  studentId,
+  grNo,
+}: {
+  studentId: number;
+  grNo?: string;
+}) {
   return (
     <DownloadMenu
       label="Full record"
@@ -54,8 +99,24 @@ export function StudentRecordDownload({ studentId, grNo }: { studentId: number; 
 }
 
 /** The students of a section (or of a whole class when no section is chosen). */
-export function ClassListDownload({ classId, sectionId }: { classId?: number | ""; sectionId?: number | "" }) {
-  const target = sectionId ? `sectionId=${sectionId}` : classId ? `classId=${classId}` : null;
+export function ClassListDownload({
+  classId,
+  sectionId,
+}: {
+  classId?: number | "";
+  sectionId?: number | "";
+}) {
+  const target = sectionId
+    ? `sectionId=${sectionId}`
+    : classId
+      ? `classId=${classId}`
+      : null;
   if (!target) return null;
-  return <DownloadMenu label="Class list" path={`/reports/class-list/file?${target}`} fileName="class-list" />;
+  return (
+    <DownloadMenu
+      label="Class list"
+      path={`/reports/class-list/file?${target}`}
+      fileName="class-list"
+    />
+  );
 }

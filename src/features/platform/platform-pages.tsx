@@ -23,6 +23,7 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { SchoolsReport } from "@/features/reports/reports-page";
 import { EmailCheck } from "./email-check";
 import { TrialBadge, TrialCard } from "./trial-admin";
+import { SubscriptionCard } from "./billing";
 
 function useOpenSchool() {
   const router = useRouter();
@@ -285,6 +286,7 @@ export function SchoolDetailPage() {
         <p className="rounded-md bg-red-50 p-3 text-sm text-red-900">Suspended: {s.suspendedReason}</p>
       )}
       <TrialCard school={s} onChange={update} />
+      <SubscriptionCard schoolId={id} />
       {link && (
         <SecretOnce
           title={`New setup link for ${link.username}`}

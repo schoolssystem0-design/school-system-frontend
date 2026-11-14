@@ -56,6 +56,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SchoolLogo, UserAvatar } from "@/components/app/avatars";
 import { TrialBanner } from "./trial-banner";
+import { SubscriptionBanner } from "./subscription-banner";
 import { OfflineBar, OfflinePill, useOfflineSync, useSyncState } from "./offline-bar";
 import { useCacheRestored } from "@/lib/offline/restored";
 import { offlineQueue } from "@/lib/offline/queue";
@@ -241,6 +242,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col">
           {me.data.superAdmin && <SuperAdminBanner schoolName={me.data.school.name ?? ""} />}
           {me.data.school.trialEndsAt && <TrialBanner endsAt={me.data.school.trialEndsAt} />}
+          {!me.data.school.trialEndsAt && <SubscriptionBanner />}
           <OfflineSync me={me.data} />
           <OfflineBar />
           <div className="flex flex-1">

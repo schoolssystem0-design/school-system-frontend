@@ -1483,7 +1483,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["dashboard"];
+        get: operations["dashboard_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2109,7 +2109,7 @@ export interface paths {
         };
         get: operations["runs"];
         put?: never;
-        post: operations["run"];
+        post: operations["run_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2429,7 +2429,7 @@ export interface paths {
         };
         get: operations["list_2"];
         put?: never;
-        post: operations["pay_1"];
+        post: operations["pay_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3293,7 +3293,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["pay"];
+        post: operations["pay_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3428,6 +3428,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/platform/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["overview_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/billing/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["paymentDetails"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/billing/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/platform/email": {
         parameters: {
             query?: never;
@@ -3454,6 +3518,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["test_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/invoices/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/invoices/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/invoices/{id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["voidInvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3540,6 +3652,22 @@ export interface paths {
         patch: operations["rename"];
         trace?: never;
     };
+    "/api/v1/platform/schools/{id}/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schoolBilling"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/platform/schools/{id}/delete": {
         parameters: {
             query?: never;
@@ -3598,6 +3726,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["reactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/schools/{id}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveSubscription"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/schools/{id}/subscription/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3726,6 +3886,22 @@ export interface paths {
         get: operations["info"];
         put?: never;
         post: operations["start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/benchmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["benchmark"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4708,6 +4884,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["own"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/subscription/invoices/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ownPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/test-marks": {
         parameters: {
             query?: never;
@@ -5067,6 +5275,13 @@ export interface components {
         BandsRequest: {
             bands: components["schemas"]["BandRequest"][];
         };
+        Benchmark: {
+            comparedWith?: string;
+            measures?: components["schemas"]["Measure"][];
+            sharing?: boolean;
+            /** Format: int32 */
+            studentsHere?: number;
+        };
         BillLineView: {
             adjusted?: string;
             balance?: string;
@@ -5144,6 +5359,32 @@ export interface components {
             /** Format: date */
             validityDate?: string;
         };
+        BillingOverview: {
+            invoices?: components["schemas"]["InvoiceView"][];
+            paymentDetails?: string;
+            subscriptions?: components["schemas"]["SubscriptionView"][];
+            summary?: components["schemas"]["BillingSummary"];
+        };
+        BillingRunResult: {
+            /** Format: int32 */
+            invoicesIssued?: number;
+            /** Format: int32 */
+            remindersSent?: number;
+        };
+        BillingSummary: {
+            expectedThisMonth?: string;
+            /** Format: int32 */
+            monthly?: number;
+            overdue?: string;
+            /** Format: int32 */
+            pausedSchools?: number;
+            /** Format: int32 */
+            payingSchools?: number;
+            receivedThisMonth?: string;
+            unpaid?: string;
+            /** Format: int32 */
+            yearly?: number;
+        };
         BirthdayLine: {
             /** Format: date */
             birthday?: string;
@@ -5192,6 +5433,13 @@ export interface components {
             created?: number;
             /** Format: int32 */
             days?: number;
+        };
+        BusinessDashboard: {
+            conversion?: components["schemas"]["Conversion"];
+            growth?: components["schemas"]["GrowthPoint"][];
+            headline?: components["schemas"]["Headline"];
+            schools?: components["schemas"]["SchoolHealth"][];
+            trials?: components["schemas"]["TrialRow"][];
         };
         Candidate: {
             alreadyIn?: string;
@@ -5474,6 +5722,18 @@ export interface components {
             /** Format: int64 */
             classId?: number;
             kind: string;
+        };
+        Conversion: {
+            /** Format: int32 */
+            convertedAllTime?: number;
+            /** Format: int32 */
+            convertedThisMonth?: number;
+            /** Format: int32 */
+            ratePercent?: number;
+            /** Format: int32 */
+            trialsAllTime?: number;
+            /** Format: int32 */
+            trialsThisMonth?: number;
         };
         CorrectionRow: {
             /** Format: date-time */
@@ -6252,6 +6512,13 @@ export interface components {
             kind?: string;
             name?: string;
         };
+        GrowthPoint: {
+            month?: string;
+            /** Format: int32 */
+            schools?: number;
+            /** Format: int64 */
+            students?: number;
+        };
         HandoverRequest: {
             /** Format: date */
             effectiveFrom?: string;
@@ -6285,6 +6552,25 @@ export interface components {
             systemCode?: string;
             /** Format: int64 */
             version?: number;
+        };
+        Headline: {
+            /** Format: int64 */
+            activeUsers7d?: number;
+            expectedThisMonth?: string;
+            /** Format: int32 */
+            onTrial?: number;
+            overdue?: string;
+            /** Format: int32 */
+            paused?: number;
+            /** Format: int32 */
+            paying?: number;
+            receivedThisMonth?: string;
+            /** Format: int32 */
+            schools?: number;
+            /** Format: int64 */
+            students?: number;
+            /** Format: int32 */
+            trialsEndingThisWeek?: number;
         };
         HistoryEntry: {
             /** Format: date-time */
@@ -6336,6 +6622,44 @@ export interface components {
             name?: string;
             /** Format: int32 */
             row?: number;
+        };
+        InvoicePaymentRequest: {
+            method?: string;
+            /** Format: date */
+            paidOn?: string;
+            reference?: string;
+        };
+        InvoiceView: {
+            amount?: string;
+            cycle?: string;
+            /** Format: date */
+            dueOn?: string;
+            /** Format: int64 */
+            id?: number;
+            invoiceNo?: string;
+            /** Format: date */
+            issuedOn?: string;
+            overdue?: boolean;
+            /** Format: date */
+            paidOn?: string;
+            paused?: boolean;
+            /** Format: date */
+            pausesOn?: string;
+            paymentMethod?: string;
+            paymentReference?: string;
+            /** Format: date */
+            periodEnd?: string;
+            /** Format: date */
+            periodStart?: string;
+            schoolCode?: string;
+            /** Format: int64 */
+            schoolId?: number;
+            schoolName?: string;
+            status?: string;
+            voidReason?: string;
+        };
+        InvoiceVoidRequest: {
+            reason: string;
         };
         LateFeeRequest: {
             amount?: string;
@@ -6556,6 +6880,18 @@ export interface components {
             superAdmin?: boolean;
             /** Format: int64 */
             userId?: number;
+        };
+        Measure: {
+            average?: string;
+            higherIsBetter?: boolean;
+            hint?: string;
+            key?: string;
+            label?: string;
+            /** Format: int32 */
+            schools?: number;
+            unit?: string;
+            value?: string;
+            verdict?: string;
         };
         MessageRequest: {
             audience: string;
@@ -6790,6 +7126,15 @@ export interface components {
             /** Format: int64 */
             fileId?: number;
         };
+        OwnSubscription: {
+            amount?: string;
+            cycle?: string;
+            /** Format: date */
+            nextDueOn?: string;
+            openInvoices?: components["schemas"]["InvoiceView"][];
+            paymentDetails?: string;
+            standing?: string;
+        };
         PageResponseActivityRow: {
             items?: components["schemas"]["ActivityRow"][];
             /** Format: int32 */
@@ -6987,6 +7332,9 @@ export interface components {
             accountId: number;
             /** Format: date */
             paymentDate?: string;
+        };
+        PaymentDetailsRequest: {
+            paymentDetails?: string;
         };
         PaymentRequest: {
             /** Format: int64 */
@@ -7547,6 +7895,10 @@ export interface components {
             kind?: string;
             name?: string;
         };
+        SchoolBilling: {
+            invoices?: components["schemas"]["InvoiceView"][];
+            subscription?: components["schemas"]["SubscriptionView"];
+        };
         SchoolCreated: {
             adminSetup?: components["schemas"]["SetupLink"];
             code?: string;
@@ -7571,6 +7923,31 @@ export interface components {
             /** Format: int32 */
             students?: number;
             testAverage?: string;
+        };
+        SchoolHealth: {
+            /** Format: int64 */
+            activeUsers7d?: number;
+            code?: string;
+            health?: string;
+            /** Format: date-time */
+            lastSignIn?: string;
+            name?: string;
+            /** Format: int64 */
+            payments30d?: number;
+            plan?: string;
+            reasons?: string[];
+            /** Format: int64 */
+            registers7d?: number;
+            /** Format: int64 */
+            schoolId?: number;
+            /** Format: int64 */
+            sms30d?: number;
+            /** Format: int64 */
+            smsFailed30d?: number;
+            smsPhone?: string;
+            standing?: string;
+            /** Format: int64 */
+            students?: number;
         };
         SchoolInfo: {
             code?: string;
@@ -8278,6 +8655,37 @@ export interface components {
             /** Format: int64 */
             version?: number;
         };
+        SubscriptionRequest: {
+            amount: string;
+            cycle: string;
+            /** Format: int32 */
+            graceDays?: number;
+            notes?: string;
+            /** Format: date */
+            startOn?: string;
+        };
+        SubscriptionView: {
+            amount?: string;
+            cycle?: string;
+            /** Format: int32 */
+            graceDays?: number;
+            /** Format: int64 */
+            id?: number;
+            /** Format: date */
+            nextDueOn?: string;
+            notes?: string;
+            /** Format: date */
+            pausesOn?: string;
+            schoolCode?: string;
+            /** Format: int64 */
+            schoolId?: number;
+            schoolName?: string;
+            standing?: string;
+            /** Format: date */
+            startedOn?: string;
+            status?: string;
+            unpaidAmount?: string;
+        };
         SummaryRow: {
             amountIn?: string;
             amountOut?: string;
@@ -8424,6 +8832,25 @@ export interface components {
         TrialInfo: {
             /** Format: int32 */
             days?: number;
+        };
+        TrialRow: {
+            /** Format: int64 */
+            activeUsers7d?: number;
+            code?: string;
+            /** Format: int32 */
+            daysLeft?: number;
+            interest?: string;
+            /** Format: date-time */
+            lastSignIn?: string;
+            name?: string;
+            /** Format: int64 */
+            registers7d?: number;
+            /** Format: int64 */
+            schoolId?: number;
+            /** Format: int64 */
+            students?: number;
+            /** Format: date-time */
+            trialEndsAt?: string;
         };
         TrialSignupRequest: {
             adminName: string;
@@ -11351,7 +11778,7 @@ export interface operations {
             };
         };
     };
-    dashboard: {
+    dashboard_1: {
         parameters: {
             query?: {
                 reveal?: boolean;
@@ -12434,7 +12861,7 @@ export interface operations {
             };
         };
     };
-    run: {
+    run_1: {
         parameters: {
             query?: never;
             header?: {
@@ -13016,7 +13443,7 @@ export interface operations {
             };
         };
     };
-    pay_1: {
+    pay_2: {
         parameters: {
             query?: never;
             header?: {
@@ -14578,7 +15005,7 @@ export interface operations {
             };
         };
     };
-    pay: {
+    pay_1: {
         parameters: {
             query?: never;
             header?: {
@@ -14789,6 +15216,90 @@ export interface operations {
             };
         };
     };
+    overview_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BillingOverview"];
+                };
+            };
+        };
+    };
+    paymentDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentDetailsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentDetailsRequest"];
+                };
+            };
+        };
+    };
+    run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BillingRunResult"];
+                };
+            };
+        };
+    };
+    dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BusinessDashboard"];
+                };
+            };
+        };
+    };
     status_1: {
         parameters: {
             query?: never;
@@ -14829,6 +15340,80 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EmailTestResult"];
+                };
+            };
+        };
+    };
+    pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoicePaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvoiceView"];
+                };
+            };
+        };
+    };
+    pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
+    voidInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceVoidRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvoiceView"];
                 };
             };
         };
@@ -14992,6 +15577,28 @@ export interface operations {
             };
         };
     };
+    schoolBilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolBilling"];
+                };
+            };
+        };
+    };
     deleteSchool: {
         parameters: {
             query?: never;
@@ -15083,6 +15690,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SchoolView"];
+                };
+            };
+        };
+    };
+    saveSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolBilling"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolBilling"];
                 };
             };
         };
@@ -15297,6 +15952,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TrialStarted"];
+                };
+            };
+        };
+    };
+    benchmark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Benchmark"];
                 };
             };
         };
@@ -17085,6 +17760,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StudentView"];
+                };
+            };
+        };
+    };
+    own: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OwnSubscription"];
+                };
+            };
+        };
+    };
+    ownPdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
                 };
             };
         };

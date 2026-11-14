@@ -23,6 +23,8 @@ import { ClassSelect, SectionSelect, today, useCan } from "@/features/people/sha
 import { useYear } from "@/features/shell/year-context";
 import { staff as staffApi } from "@/lib/api/people";
 import { XLSX_TYPE } from "./export-bar";
+import { BenchmarkPanel } from "./benchmark";
+import { SubscriptionPanel } from "@/features/shell/subscription-banner";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 
@@ -280,11 +282,15 @@ export function ReportsPage() {
           <TabsTrigger value="student">Student</TabsTrigger>
           <TabsTrigger value="class">Class</TabsTrigger>
           {can(P.REPORTS_STAFF_VIEW) && <TabsTrigger value="teacher">Teacher</TabsTrigger>}
+          <TabsTrigger value="compare">How we compare</TabsTrigger>
+          {can(P.SCHOOL_PROFILE_EDIT) && <TabsTrigger value="subscription">Subscription</TabsTrigger>}
           <TabsTrigger value="all">All reports</TabsTrigger>
         </TabsList>
         <TabsContent value="student" className="mt-4"><StudentReport /></TabsContent>
         <TabsContent value="class" className="mt-4"><ClassReport /></TabsContent>
         <TabsContent value="teacher" className="mt-4"><TeacherReport /></TabsContent>
+        <TabsContent value="compare" className="mt-4"><BenchmarkPanel /></TabsContent>
+        {can(P.SCHOOL_PROFILE_EDIT) && <TabsContent value="subscription" className="mt-4"><SubscriptionPanel /></TabsContent>}
         <TabsContent value="all" className="mt-4"><Catalogue /></TabsContent>
       </Tabs>
     </div>

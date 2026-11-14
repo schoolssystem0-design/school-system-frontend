@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, FileBarChart, LayoutGrid, Loader2, LogOut, ScrollText } from "lucide-react";
+import { Building2, FileBarChart, Gauge, LayoutGrid, Loader2, LogOut, ScrollText, Wallet } from "lucide-react";
 import { BrandIcon } from "@/components/app/brand";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -14,8 +14,10 @@ import { logout } from "@/lib/api/auth";
 import { platform } from "@/lib/api/endpoints";
 
 const NAV = [
+  { href: "/platform/dashboard", label: "Dashboard", icon: Gauge },
   { href: "/platform", label: "All schools", icon: LayoutGrid },
   { href: "/platform/schools/new", label: "Add school", icon: Building2 },
+  { href: "/platform/billing", label: "Billing", icon: Wallet },
   { href: "/platform/reports", label: "Reports", icon: FileBarChart },
   { href: "/platform/audit", label: "Platform audit", icon: ScrollText },
 ];
