@@ -17,10 +17,10 @@ export function useCanDownloadRecords() {
 }
 
 /** A button that downloads one report as PDF or Excel (for the academic year selected at the top). */
-function DownloadMenu({ label, path, fileName }: { label: string; path: string; fileName: string }) {
+export function DownloadMenu({ label, path, fileName }: { label: string; path: string; fileName: string }) {
   const save = useMutation({
     mutationFn: async (format: "pdf" | "xlsx") => {
-      const blob = await apiBlob(`${path}&format=${format}`, {}, format === "pdf" ? "application/pdf" : XLSX_TYPE);
+      const blob = await apiBlob(`${path}${path.includes("?") ? "&" : "?"}format=${format}`, {}, format === "pdf" ? "application/pdf" : XLSX_TYPE);
       openBlob(blob, `${fileName}.${format}`);
     },
     onError: (e) => toast.error(errorMessage(e)),

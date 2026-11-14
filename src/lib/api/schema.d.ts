@@ -3748,6 +3748,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/classes-overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["classesOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/classes-overview/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["classesOverviewFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/classes-overview/sections/{sectionId}/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sectionStudents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/student": {
         parameters: {
             query?: never;
@@ -5199,6 +5247,18 @@ export interface components {
             classId: number;
             /** Format: int64 */
             feeHeadId: number;
+        };
+        ClassOverview: {
+            /** Format: int32 */
+            boys?: number;
+            /** Format: int64 */
+            classId?: number;
+            className?: string;
+            /** Format: int32 */
+            girls?: number;
+            sections?: components["schemas"]["SectionOverview"][];
+            /** Format: int32 */
+            total?: number;
         };
         ClassRequest: {
             /** @enum {string} */
@@ -7459,6 +7519,28 @@ export interface components {
             /** Format: date-time */
             trialEndsAt?: string;
         };
+        SchoolOverview: {
+            /** Format: int32 */
+            absentToday?: number;
+            /** Format: int32 */
+            boys?: number;
+            classes?: components["schemas"]["ClassOverview"][];
+            fees?: boolean;
+            /** Format: int32 */
+            girls?: number;
+            /** Format: date */
+            on?: string;
+            /** Format: int32 */
+            presentToday?: number;
+            /** Format: int32 */
+            sections?: number;
+            /** Format: int32 */
+            sectionsMarked?: number;
+            today?: boolean;
+            /** Format: int32 */
+            total?: number;
+            year?: string;
+        };
         SchoolRow: {
             /** Format: int64 */
             activeUsers?: number;
@@ -7501,6 +7583,36 @@ export interface components {
             rows?: string[][];
             title?: string;
         };
+        SectionOverview: {
+            /** Format: int32 */
+            absentToday?: number;
+            /** Format: int32 */
+            boys?: number;
+            /** Format: int64 */
+            classId?: number;
+            className?: string;
+            classTeacher?: string;
+            /** Format: int32 */
+            defaulters?: number;
+            feesOutstanding?: string;
+            /** Format: int32 */
+            girls?: number;
+            /** Format: int32 */
+            leaveToday?: number;
+            /** Format: int32 */
+            leftThisYear?: number;
+            markedToday?: boolean;
+            monthAttendance?: string;
+            /** Format: int32 */
+            newThisYear?: number;
+            /** Format: int32 */
+            presentToday?: number;
+            /** Format: int64 */
+            sectionId?: number;
+            sectionName?: string;
+            /** Format: int32 */
+            total?: number;
+        };
         SectionRef: {
             active?: boolean;
             /** Format: int64 */
@@ -7511,6 +7623,17 @@ export interface components {
             /** Format: int64 */
             id?: number;
             sectionName?: string;
+        };
+        SectionStudent: {
+            fatherName?: string;
+            fatherPhone?: string;
+            feesOutstanding?: string;
+            gender?: string;
+            grNo?: string;
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            today?: string;
         };
         SectionSummary: {
             /** Format: int32 */
@@ -15146,6 +15269,70 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    classesOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SchoolOverview"];
+                };
+            };
+        };
+    };
+    classesOverviewFile: {
+        parameters: {
+            query: {
+                format: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    sectionStudents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sectionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SectionStudent"][];
                 };
             };
         };

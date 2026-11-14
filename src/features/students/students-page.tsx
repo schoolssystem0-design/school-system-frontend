@@ -21,6 +21,7 @@ import { formatDate } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { ClassSelect, label, Pager, SectionSelect, today, useCan } from "@/features/people/shared";
 import { ClassListDownload, useCanDownloadRecords } from "@/features/reports/record-downloads";
+import { ClassesOverview } from "./classes-overview";
 
 /** Student list with search and filters (FR 5.3), class strength (FR 5.9) and the admission/withdrawal register. */
 export function StudentsPage() {
@@ -58,14 +59,14 @@ export function StudentsPage() {
       <Tabs defaultValue="list">
         <TabsList>
           <TabsTrigger value="list">Students</TabsTrigger>
-          <TabsTrigger value="strength">Class strength</TabsTrigger>
+          <TabsTrigger value="strength">Classes &amp; sections</TabsTrigger>
           <TabsTrigger value="register">Admission &amp; leaving register</TabsTrigger>
         </TabsList>
         <TabsContent value="list" className="mt-4">
           <StudentList />
         </TabsContent>
         <TabsContent value="strength" className="mt-4">
-          <Strength />
+          <ClassesOverview />
         </TabsContent>
         <TabsContent value="register" className="mt-4">
           <Register />
@@ -205,53 +206,6 @@ function StudentList() {
         </div>
       )}
     </div>
-  );
-}
-
-function Strength() {
-  const strength = useQuery({ queryKey: ["students", "strength"], queryFn: students.strength });
-  if (strength.isPending) return <Loading />;
-  if (strength.isError) return <ErrorState error={strength.error} onRetry={() => strength.refetch()} />;
-  if (strength.data.length === 0) return <Empty title="No students in this year yet" />;
-  const total = strength.data.reduce<{ boys: number; girls: number; total: number }>(
-    (sum, r) => ({ boys: sum.boys + (r.boys ?? 0), girls: sum.girls + (r.girls ?? 0), total: sum.total + (r.total ?? 0) }),
-    { boys: 0, girls: 0, total: 0 },
-  );
-  return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Class</TableHead>
-              <TableHead>Section</TableHead>
-              <TableHead className="text-right">Boys</TableHead>
-              <TableHead className="text-right">Girls</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {strength.data.map((r) => (
-              <TableRow key={r.sectionId}>
-                <TableCell>{r.className}</TableCell>
-                <TableCell>{r.sectionName}</TableCell>
-                <TableCell className="text-right">{r.boys}</TableCell>
-                <TableCell className="text-right">{r.girls}</TableCell>
-                <TableCell className="text-right font-medium">{r.total}</TableCell>
-              </TableRow>
-            ))}
-            <TableRow>
-              <TableCell colSpan={2} className="font-semibold">
-                School total
-              </TableCell>
-              <TableCell className="text-right font-semibold">{total.boys}</TableCell>
-              <TableCell className="text-right font-semibold">{total.girls}</TableCell>
-              <TableCell className="text-right font-semibold">{total.total}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
   );
 }
 
