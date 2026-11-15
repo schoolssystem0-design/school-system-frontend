@@ -51,9 +51,21 @@ export async function signInOwner(page: Page) {
   await page.goto("/platform/sign-in");
   await page.getByLabel("Email").fill(OWNER_EMAIL);
   await page.getByLabel("Password").fill(OWNER_PASSWORD);
-  await page.getByLabel("Authenticator code").fill(totp(OWNER_TOTP_SECRET));
   await page.getByRole("button", { name: "Sign in" }).click();
+  const code = await latestPlatformSignInCode(page);
+  await page.getByLabel("Sign-in code").fill(code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
   await expect(page.getByRole("heading", { name: "All schools" })).toBeVisible();
+}
+
+/** Latest super-admin sign-in code from the local dev outbox (local profile only). */
+export async function latestPlatformSignInCode(page: Page) {
+  const response = await page.request.get(`${API}/dev/outbox`);
+  const entries = (await response.json()) as { message: { subject: string | null; body: string } }[];
+  const row = entries.find((e) => e.message.subject === "School Management Platform sign-in code");
+  const match = row?.message.body.match(/Your sign-in code is:\s*(\d{6})/);
+  if (!match) throw new Error("No platform sign-in code in the dev outbox");
+  return match[1];
 }
 
 /** Latest step-up code from the local dev outbox (local profile only). */

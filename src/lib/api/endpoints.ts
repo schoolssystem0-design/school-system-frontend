@@ -125,10 +125,14 @@ export type PlatformMe = Schemas["PlatformMe"];
 export type SchoolDetail = Schemas["SchoolView"];
 
 export const platform = {
-  login: (email: string, password: string, totpCode: string) =>
+  login: (
+    email: string,
+    password: string,
+    codes?: { totpCode?: string; emailCode?: string },
+  ) =>
     api<Schemas["PlatformLoginResponse"]>("/platform/auth/login", {
       method: "POST",
-      body: { email, password, totpCode },
+      body: { email, password, ...codes },
     }),
   enrol: (code: string) =>
     api<Schemas["PlatformLoginResponse"]>("/platform/auth/totp/enroll", { method: "POST", body: { code } }),
