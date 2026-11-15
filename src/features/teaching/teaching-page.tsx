@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Lock, LockOpen } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Empty, ErrorState, Loading } from "@/components/app/data-state";
@@ -21,6 +22,7 @@ import { formatDate } from "@/lib/format";
 import { P } from "@/lib/permissions";
 import { SectionSelect, sectionOptions, today, useCan, useClasses } from "@/features/people/shared";
 import { useYear } from "@/features/shell/year-context";
+import { AutoTimetable, useBellSchedule } from "./auto-timetable";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
@@ -46,6 +48,7 @@ export function TeachingPage() {
         <TabsList>
           <TabsTrigger value="assignments">Teachers by section</TabsTrigger>
           <TabsTrigger value="timetable">Timetable</TabsTrigger>
+          <TabsTrigger value="auto">Auto-generate</TabsTrigger>
           <TabsTrigger value="teacher">Teacher&apos;s timetable</TabsTrigger>
           <TabsTrigger value="handover">Hand over</TabsTrigger>
         </TabsList>
@@ -54,6 +57,9 @@ export function TeachingPage() {
         </TabsContent>
         <TabsContent value="timetable" className="mt-4">
           <Timetable yearId={selected.id ?? 0} />
+        </TabsContent>
+        <TabsContent value="auto" className="mt-4">
+          <AutoTimetable yearId={selected.id ?? 0} />
         </TabsContent>
         <TabsContent value="teacher" className="mt-4">
           <TeacherTimetable yearId={selected.id ?? 0} />
@@ -231,7 +237,7 @@ function Assignments({ yearId }: { yearId: number }) {
   );
 }
 
-type Cell = { subjectId: number | ""; staffId: number | "" };
+type Cell = { subjectId: number | ""; staffId: number | ""; locked?: boolean };
 
 function Timetable({ yearId }: { yearId: number }) {
   const [sectionId, setSectionId] = useState<number | "">("");
@@ -243,6 +249,7 @@ function Timetable({ yearId }: { yearId: number }) {
     // Always load fresh when a section is opened: the editor starts from this data and keeps the user's edits after.
     staleTime: 0,
   });
+  const bells = useBellSchedule(yearId);
   const days = DAYS.map((d, i) => ({ name: d, weekday: i + 1 })).filter((d) => (week.data?.[d.name] ?? "FULL") !== "OFF");
   return (
     <div className="flex flex-col gap-4">
@@ -251,7 +258,7 @@ function Timetable({ yearId }: { yearId: number }) {
       </Field>
       {sectionId === "" ? (
         <Empty title="Choose a section" />
-      ) : periods.isPending || week.isPending || !periods.isFetchedAfterMount ? (
+      ) : periods.isPending || week.isPending || bells.isPending || !periods.isFetchedAfterMount ? (
         <Loading />
       ) : periods.isError ? (
         <ErrorState error={periods.error} onRetry={() => periods.refetch()} />
@@ -262,6 +269,7 @@ function Timetable({ yearId }: { yearId: number }) {
           sectionId={Number(sectionId)}
           days={days}
           initial={periods.data}
+          bellTimes={(bells.data ?? []).filter((b) => b.kind === "PERIOD").map((b) => ({ start: (b.startTime ?? "").slice(0, 5), end: (b.endTime ?? "").slice(0, 5) }))}
         />
       )}
     </div>
@@ -353,11 +361,14 @@ function TimetableEditor({
   sectionId,
   days,
   initial,
+  bellTimes,
 }: {
   yearId: number;
   sectionId: number;
   days: { name: string; weekday: number }[];
   initial: Period[];
+  /** Times of periods 1, 2, 3... from the bell schedule, used where a period has no times of its own. */
+  bellTimes: { start: string; end: string }[];
 }) {
   const can = useCan();
   const queryClient = useQueryClient();
@@ -369,17 +380,22 @@ function TimetableEditor({
     queryFn: () => academics.classSubjects(yearId, classId ?? 0),
     enabled: classId != null,
   });
-  const initialCount = Math.max(6, ...initial.map((p) => p.periodNo ?? 0));
+  const initialCount = Math.max(bellTimes.length || 6, ...initial.map((p) => p.periodNo ?? 0));
   const [count, setCount] = useState(initialCount);
   const [times, setTimes] = useState<Record<number, { start: string; end: string }>>(() => {
     const t: Record<number, { start: string; end: string }> = {};
-    for (const p of initial) {
-      t[p.periodNo ?? 0] ??= { start: (p.startTime ?? "").slice(0, 5), end: (p.endTime ?? "").slice(0, 5) };
+    bellTimes.forEach((b, i) => {
+      t[i + 1] = b;
+    });
+    for (const p of initial.filter((x) => x.startTime || x.endTime)) {
+      t[p.periodNo ?? 0] = { start: (p.startTime ?? "").slice(0, 5), end: (p.endTime ?? "").slice(0, 5) };
     }
     return t;
   });
   const [cells, setCells] = useState<Record<string, Cell>>(() =>
-    Object.fromEntries(initial.map((p) => [`${p.weekday}:${p.periodNo}`, { subjectId: p.subjectId ?? "", staffId: p.staffId ?? "" }])),
+    Object.fromEntries(
+      initial.map((p) => [`${p.weekday}:${p.periodNo}`, { subjectId: p.subjectId ?? "", staffId: p.staffId ?? "", locked: p.locked ?? false }]),
+    ),
   );
   const manage = can(P.ACADEMICS_MANAGE);
   const numbers = Array.from({ length: count }, (_, i) => i + 1);
@@ -399,6 +415,7 @@ function TimetableEditor({
             ...timeOf(periodNo),
             subjectId: c.subjectId === "" ? undefined : c.subjectId,
             staffId: c.staffId === "" ? undefined : c.staffId,
+            locked: c.locked ?? false,
           };
         });
       // A period with bell times but no lesson on any day yet (e.g. a free period) is kept as one empty slot,
@@ -416,7 +433,7 @@ function TimetableEditor({
     onError,
   });
   const setCell = (key: string, patch: Partial<Cell>) =>
-    setCells((c) => ({ ...c, [key]: { ...(c[key] ?? { subjectId: "", staffId: "" }), ...patch } }));
+    setCells((c) => ({ ...c, [key]: { ...(c[key] ?? { subjectId: "", staffId: "", locked: false }), ...patch } }));
 
   return (
     <div className="flex flex-col gap-4">
@@ -430,7 +447,10 @@ function TimetableEditor({
       <Card>
         <CardHeader>
           <CardTitle>Weekly timetable</CardTitle>
-          <CardDescription>A teacher cannot be in two sections in the same period.</CardDescription>
+          <CardDescription>
+            A teacher cannot be in two sections in the same period. Lock a period (padlock) to keep it when the timetable is
+            auto-generated.
+          </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full min-w-[720px] border-collapse text-sm">
@@ -504,6 +524,20 @@ function TimetableEditor({
                               </option>
                             ))}
                           </NativeSelect>
+                          {manage && (cell?.subjectId || cell?.staffId) ? (
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant={cell?.locked ? "secondary" : "ghost"}
+                              className="self-start"
+                              aria-pressed={cell?.locked ?? false}
+                              aria-label={`${cell?.locked ? "Unlock" : "Lock"} ${d.name} period ${n}`}
+                              onClick={() => setCell(key, { locked: !cell?.locked })}
+                            >
+                              {cell?.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                              {cell?.locked ? "Locked" : "Lock"}
+                            </Button>
+                          ) : null}
                         </div>
                       </td>
                     );

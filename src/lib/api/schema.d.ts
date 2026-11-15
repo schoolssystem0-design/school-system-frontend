@@ -244,6 +244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academics/years/{yearId}/bell-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["bellSchedule"];
+        put: operations["saveBellSchedule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academics/years/{yearId}/classes/{classId}/subjects": {
         parameters: {
             query?: never;
@@ -284,8 +300,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["timetable"];
-        put?: never;
+        put: operations["saveTimetables"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academics/years/{yearId}/timetable/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generate_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5275,6 +5307,15 @@ export interface components {
         BandsRequest: {
             bands: components["schemas"]["BandRequest"][];
         };
+        BellSlotRequest: {
+            /** Format: time-local */
+            endTime: string;
+            kind: string;
+            label?: string;
+            onHalfDay?: boolean;
+            /** Format: time-local */
+            startTime: string;
+        };
         Benchmark: {
             comparedWith?: string;
             measures?: components["schemas"]["Measure"][];
@@ -5563,18 +5604,24 @@ export interface components {
             version?: number;
         };
         ClassSubjectRequest: {
+            doublePeriod?: boolean;
             maxMarks: number;
             passingMarks?: number;
+            /** Format: int32 */
+            periodsPerWeek?: number;
             /** Format: int64 */
             subjectId: number;
         };
         ClassSubjectView: {
             /** Format: int32 */
             displayOrder?: number;
+            doublePeriod?: boolean;
             /** Format: int64 */
             id?: number;
             maxMarks?: number;
             passingMarks?: number;
+            /** Format: int32 */
+            periodsPerWeek?: number;
             status?: string;
             /** Format: int64 */
             subjectId?: number;
@@ -6501,6 +6548,9 @@ export interface components {
             nextDate?: string;
             remark: string;
         };
+        GenerateRequest: {
+            sectionIds?: number[];
+        };
         GroupRequest: {
             kind: string;
             name: string;
@@ -7406,6 +7456,7 @@ export interface components {
         PeriodRequest: {
             /** Format: time-local */
             endTime?: string;
+            locked?: boolean;
             /** Format: int32 */
             periodNo?: number;
             /** Format: int64 */
@@ -7420,6 +7471,7 @@ export interface components {
         PeriodView: {
             /** Format: time-local */
             endTime?: string;
+            locked?: boolean;
             /** Format: int32 */
             periodNo?: number;
             /** Format: int64 */
@@ -7610,6 +7662,15 @@ export interface components {
             promoted?: number;
             /** Format: int32 */
             repeating?: number;
+        };
+        Proposal: {
+            complete?: boolean;
+            /** Format: int32 */
+            placed?: number;
+            problems?: string[];
+            sections?: components["schemas"]["SectionPlan"][];
+            /** Format: int32 */
+            total?: number;
         };
         Queued: {
             /** Format: int32 */
@@ -8053,6 +8114,12 @@ export interface components {
             /** Format: int32 */
             total?: number;
         };
+        SectionPlan: {
+            periods?: components["schemas"]["PeriodView"][];
+            /** Format: int64 */
+            sectionId?: number;
+            sectionLabel?: string;
+        };
         SectionRef: {
             active?: boolean;
             /** Format: int64 */
@@ -8088,6 +8155,11 @@ export interface components {
             students?: number;
             /** Format: int32 */
             workingDays?: number;
+        };
+        SectionTimetableRequest: {
+            periods: components["schemas"]["PeriodRequest"][];
+            /** Format: int64 */
+            sectionId: number;
         };
         SectionView: {
             /** Format: int64 */
@@ -8228,6 +8300,17 @@ export interface components {
             name: string;
             role: string;
             title?: string;
+        };
+        Slot: {
+            /** Format: time-local */
+            endTime?: string;
+            kind?: string;
+            label?: string;
+            onHalfDay?: boolean;
+            /** Format: int32 */
+            periodNo?: number;
+            /** Format: time-local */
+            startTime?: string;
         };
         SmsTestRequest: {
             phone: string;
@@ -9527,6 +9610,54 @@ export interface operations {
             };
         };
     };
+    bellSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                yearId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Slot"][];
+                };
+            };
+        };
+    };
+    saveBellSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                yearId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BellSlotRequest"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Slot"][];
+                };
+            };
+        };
+    };
     classSubjects: {
         parameters: {
             query?: never;
@@ -9625,6 +9756,60 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PeriodView"][];
+                };
+            };
+        };
+    };
+    saveTimetables: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                yearId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionTimetableRequest"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: number;
+                    };
+                };
+            };
+        };
+    };
+    generate_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                yearId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Proposal"];
                 };
             };
         };

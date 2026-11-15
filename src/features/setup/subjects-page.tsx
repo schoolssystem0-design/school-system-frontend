@@ -116,7 +116,8 @@ function SubjectList({ subjects, manage }: { subjects: Subject[]; manage: boolea
   );
 }
 
-type Row = { subjectId: number; maxMarks: string; passingMarks: string };
+/** periodsPerWeek / doublePeriod: for the automatic timetable. */
+type Row = { subjectId: number; maxMarks: string; passingMarks: string; periodsPerWeek: string; doublePeriod: boolean };
 
 function ClassSubjects({
   subjects,
@@ -204,6 +205,8 @@ function ClassSubjectEditor({
         subjectId: r.subjectId ?? 0,
         maxMarks: String(r.maxMarks ?? ""),
         passingMarks: r.passingMarks == null ? "" : String(r.passingMarks),
+        periodsPerWeek: r.periodsPerWeek == null ? "" : String(r.periodsPerWeek),
+        doublePeriod: r.doublePeriod ?? false,
       })),
   );
   const [adding, setAdding] = useState<number | "">("");
@@ -216,6 +219,8 @@ function ClassSubjectEditor({
           subjectId: r.subjectId,
           maxMarks: Number(r.maxMarks),
           passingMarks: r.passingMarks === "" ? undefined : Number(r.passingMarks),
+          periodsPerWeek: r.periodsPerWeek === "" ? undefined : Number(r.periodsPerWeek),
+          doublePeriod: r.doublePeriod,
         })),
       ),
     onSuccess: (saved) => {
@@ -247,6 +252,8 @@ function ClassSubjectEditor({
               <TableHead>Subject</TableHead>
               <TableHead className="w-28">Max marks</TableHead>
               <TableHead className="w-28">Passing</TableHead>
+              <TableHead className="w-28" title="Lessons a week, for the automatic timetable">Periods / week</TableHead>
+              <TableHead className="w-24" title="Lessons come as two back-to-back periods (labs, computer)">Double</TableHead>
               {editable && <TableHead className="w-28"><span className="sr-only">Actions</span></TableHead>}
             </TableRow>
           </TableHeader>
@@ -261,6 +268,16 @@ function ClassSubjectEditor({
                 <TableCell>
                   <Input aria-label={`Passing marks for ${name(r.subjectId)}`} inputMode="decimal" value={r.passingMarks} disabled={!editable}
                     onChange={(e) => setRows((all) => all.map((x, j) => (j === i ? { ...x, passingMarks: e.target.value } : x)))} />
+                </TableCell>
+                <TableCell>
+                  <Input aria-label={`Periods a week for ${name(r.subjectId)}`} inputMode="numeric" value={r.periodsPerWeek} disabled={!editable}
+                    placeholder="—"
+                    onChange={(e) => setRows((all) => all.map((x, j) => (j === i ? { ...x, periodsPerWeek: e.target.value.replace(/D/g, "").slice(0, 2) } : x)))} />
+                </TableCell>
+                <TableCell>
+                  <input type="checkbox" className="size-4 accent-primary" aria-label={`Double periods for ${name(r.subjectId)}`}
+                    checked={r.doublePeriod} disabled={!editable}
+                    onChange={(e) => setRows((all) => all.map((x, j) => (j === i ? { ...x, doublePeriod: e.target.checked } : x)))} />
                 </TableCell>
                 {editable && (
                   <TableCell className="flex gap-1">
@@ -281,6 +298,14 @@ function ClassSubjectEditor({
           </TableBody>
         </Table>
       )}
+      {rows.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {rows.some((r) => r.periodsPerWeek !== "")
+            ? `${rows.reduce((n, r) => n + (Number(r.periodsPerWeek) || 0), 0)} periods a week in total. `
+            : ""}
+          Periods a week are used by the automatic timetable (Teaching → Auto-generate).
+        </p>
+      )}
       {editable && (
         <div className="flex flex-wrap items-end gap-2">
           <Field id="cs-add" label="Add subject">
@@ -299,7 +324,7 @@ function ClassSubjectEditor({
             disabled={adding === ""}
             onClick={() => {
               if (adding === "") return;
-              setRows((all) => [...all, { subjectId: adding, maxMarks: "100", passingMarks: "33" }]);
+              setRows((all) => [...all, { subjectId: adding, maxMarks: "100", passingMarks: "33", periodsPerWeek: "", doublePeriod: false }]);
               setAdding("");
             }}
           >

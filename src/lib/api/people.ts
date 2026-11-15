@@ -165,6 +165,8 @@ export const staff = {
 // ---------------------------------------------------------------- teaching
 export type Assignment = Schemas["AssignmentView"];
 export type Period = Schemas["PeriodView"];
+export type BellSlot = Schemas["Slot"];
+export type TimetableProposal = Schemas["Proposal"];
 
 export const teaching = {
   assignments: (yearId: number, params: { sectionId?: number; staffId?: number; currentOnly?: boolean } = {}) =>
@@ -182,6 +184,16 @@ export const teaching = {
     api<Period[]>(`/academics/years/${yearId}/timetable?${query(params)}`),
   saveTimetable: (yearId: number, sectionId: number, body: Schemas["PeriodRequest"][]) =>
     api<Period[]>(`/academics/years/${yearId}/sections/${sectionId}/timetable`, { method: "PUT", body }),
+  /** The school day: periods and breaks in order, with times. */
+  bellSchedule: (yearId: number) => api<BellSlot[]>(`/academics/years/${yearId}/bell-schedule`),
+  saveBellSchedule: (yearId: number, body: Schemas["BellSlotRequest"][]) =>
+    api<BellSlot[]>(`/academics/years/${yearId}/bell-schedule`, { method: "PUT", body }),
+  /** Proposes a timetable for the chosen sections (none: all); nothing is saved. */
+  generate: (yearId: number, sectionIds?: number[]) =>
+    api<TimetableProposal>(`/academics/years/${yearId}/timetable/generate`, { method: "POST", body: { sectionIds } }),
+  /** Saves the timetables of several sections at once. */
+  saveAll: (yearId: number, body: Schemas["SectionTimetableRequest"][]) =>
+    api<{ periods?: number }>(`/academics/years/${yearId}/timetable`, { method: "PUT", body }),
 };
 
 // ---------------------------------------------------------------- rollover
