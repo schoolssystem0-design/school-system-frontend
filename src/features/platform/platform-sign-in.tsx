@@ -13,23 +13,24 @@ import { ApiError, errorMessage } from "@/lib/api/client";
 import { platform } from "@/lib/api/endpoints";
 
 /**
- * Super admin sign-in: email + password, then either a one-time code emailed to the user (default) or an authenticator
- * app when the API is configured for TOTP.
+ * Super admin sign-in: email + password, then a one-time code from email (default). Authenticator appears only when the
+ * API is in TOTP mode.
  */
 export function PlatformSignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secondStepCode, setSecondStepCode] = useState("");
-  const [needEmailCode, setNeedEmailCode] = useState(false);
+  /** After password is accepted: email code (default) or authenticator when the API asks for TOTP. */
+  const [secondStep, setSecondStep] = useState<"email" | "totp" | null>(null);
   const [codeSentHint, setCodeSentHint] = useState<string | null>(null);
   const [enrolment, setEnrolment] = useState<{ secret: string; uri: string } | null>(null);
 
   const signIn = useMutation({
     mutationFn: () =>
       platform.login(email.trim(), password, {
-        emailCode: needEmailCode ? secondStepCode.trim() : undefined,
-        totpCode: !needEmailCode && secondStepCode ? secondStepCode.trim() : undefined,
+        emailCode: secondStep === "email" ? secondStepCode.trim() : undefined,
+        totpCode: secondStep === "totp" ? secondStepCode.trim() : undefined,
       }),
     onSuccess: (result) => {
       if (result.status === "ENROL_TOTP") {
@@ -41,8 +42,12 @@ export function PlatformSignIn() {
     },
     onError: (err) => {
       if (err instanceof ApiError && err.code === "EMAIL_CODE_REQUIRED") {
-        setNeedEmailCode(true);
+        setSecondStep("email");
+        setSecondStepCode("");
         setCodeSentHint(err.message);
+      } else if (err instanceof ApiError && err.code === "TOTP_REQUIRED") {
+        setSecondStep("totp");
+        setSecondStepCode("");
       }
     },
   });
@@ -117,7 +122,8 @@ export function PlatformSignIn() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          autoFocus={!needEmailCode}
+          autoFocus={secondStep === null}
+          readOnly={secondStep !== null}
         />
       </Field>
       <Field id="p-password" label="Password">
@@ -128,9 +134,10 @@ export function PlatformSignIn() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          readOnly={secondStep !== null}
         />
       </Field>
-      {needEmailCode ? (
+      {secondStep === "email" && (
         <Field id="p-code" label="Sign-in code" hint={codeSentHint ?? "Check your email for the 6-digit code (10 minutes)."}>
           <Input
             id="p-code"
@@ -143,8 +150,9 @@ export function PlatformSignIn() {
             autoFocus
           />
         </Field>
-      ) : (
-        <Field id="p-code" label="Authenticator code" hint="Only if your account uses an authenticator app">
+      )}
+      {secondStep === "totp" && (
+        <Field id="p-code" label="Authenticator code" hint="Enter the 6-digit code from your authenticator app.">
           <Input
             id="p-code"
             inputMode="numeric"
@@ -152,12 +160,18 @@ export function PlatformSignIn() {
             maxLength={6}
             value={secondStepCode}
             onChange={(e) => setSecondStepCode(e.target.value.replace(/\D/g, ""))}
+            autoFocus
           />
         </Field>
       )}
+      {secondStep === "email" && signIn.error instanceof ApiError && signIn.error.code === "EMAIL_NOT_SENT" && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{signIn.error.message}</AlertDescription>
+        </Alert>
+      )}
       <Button type="submit" disabled={signIn.isPending}>
         <ShieldCheck aria-hidden />{" "}
-        {signIn.isPending ? "Signing in…" : needEmailCode ? "Verify and sign in" : "Sign in"}
+        {signIn.isPending ? "Signing in…" : secondStep ? "Verify and sign in" : "Sign in"}
       </Button>
     </form>
   );

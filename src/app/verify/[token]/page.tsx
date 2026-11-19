@@ -13,6 +13,9 @@ type VerifyResult = {
 
 export const metadata: Metadata = { title: "Document verification" };
 
+/** Public lookup by token; must not be prerendered at build time. */
+export const instant = false;
+
 export default async function VerifyDocumentPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   let result: VerifyResult | null = null;
