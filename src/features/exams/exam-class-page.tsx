@@ -206,8 +206,16 @@ function ResultsTable({ ec, results }: { ec: ExamClass; results: ClassResults })
   const gradeOnly = results.gradingMode === "GRADES";
   const students = results.students ?? [];
   const papers = ec.papers ?? [];
+  const canPrint = can(P.EXAMS_PRINT);
   const editableRemarks = ec.status !== "PUBLISHED" && results.live && (can(P.EXAMS_MARKS_ENTER) || can(P.EXAMS_REVIEW));
   const [editing, setEditing] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(() => new Set());
+  const printPdf = useMutation({
+    mutationFn: (params: { studentId?: number; studentIds?: number[]; fileName: string }) =>
+      exams.reportCards(ec.id ?? 0, params.studentId != null ? { studentId: params.studentId } : { studentIds: params.studentIds }),
+    onSuccess: (blob, { fileName }) => openBlob(blob, fileName),
+    onError,
+  });
   const [remarks, setRemarks] = useState<Record<number, { teacher: string; principal: string }>>(() =>
     Object.fromEntries(students.map((s) => [s.studentId ?? 0, { teacher: s.teacherRemark ?? "", principal: s.principalRemark ?? "" }])),
   );
@@ -227,6 +235,20 @@ function ResultsTable({ ec, results }: { ec: ExamClass; results: ClassResults })
     },
     onError,
   });
+  const allSelected = students.length > 0 && students.every((s) => selected.has(s.studentId ?? 0));
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(students.map((s) => s.studentId ?? 0)));
+  };
+  const toggleOne = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   if (students.length === 0) return <Empty title="No students to show" />;
   return (
     <Card>
@@ -239,12 +261,35 @@ function ResultsTable({ ec, results }: { ec: ExamClass; results: ClassResults })
             {students.some((s) => (s.missing ?? 0) > 0) && ` · ${students.filter((s) => (s.missing ?? 0) > 0).length} incomplete`}
           </CardDescription>
         </div>
-        {editableRemarks && !editing && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>Write remarks</Button>}
+        <div className="flex flex-wrap gap-2">
+          {canPrint && selected.size > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={printPdf.isPending}
+              onClick={() =>
+                printPdf.mutate({ studentIds: [...selected], fileName: `report-cards-${selected.size}.pdf` })
+              }
+            >
+              Download {selected.size} report card{selected.size === 1 ? "" : "s"}
+            </Button>
+          )}
+          {editableRemarks && !editing && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>Write remarks</Button>}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              {canPrint && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    aria-label="Select all students"
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                  />
+                </TableHead>
+              )}
               <TableHead>Student</TableHead>
               {papers.map((p) => (
                 <TableHead key={p.id} className="text-right">{p.subjectName}{gradeOnly ? "" : ` (${p.maxMarks})`}</TableHead>
@@ -254,12 +299,22 @@ function ResultsTable({ ec, results }: { ec: ExamClass; results: ClassResults })
               {!gradeOnly && <TableHead>Grade</TableHead>}
               {students.some((s) => s.position != null) && <TableHead className="text-right">Position</TableHead>}
               <TableHead>Result</TableHead>
+              {canPrint && <TableHead className="w-24" />}
               {editing && <TableHead>Remarks</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {students.map((s) => (
               <TableRow key={s.studentId}>
+                {canPrint && (
+                  <TableCell>
+                    <Checkbox
+                      aria-label={`Select ${s.name}`}
+                      checked={selected.has(s.studentId ?? 0)}
+                      onCheckedChange={() => toggleOne(s.studentId ?? 0)}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>
                   <span className="font-medium">{s.name}</span>{" "}
                   <span className="text-xs text-muted-foreground">{s.section} · GR {s.grNo}</span>
@@ -277,6 +332,23 @@ function ResultsTable({ ec, results }: { ec: ExamClass; results: ClassResults })
                 {!gradeOnly && <TableCell className="font-semibold">{s.grade ?? "—"}</TableCell>}
                 {students.some((x) => x.position != null) && <TableCell className="text-right">{s.position ?? "—"}</TableCell>}
                 <TableCell>{resultText(s)}</TableCell>
+                {canPrint && (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={printPdf.isPending}
+                      onClick={() =>
+                        printPdf.mutate({
+                          studentId: s.studentId ?? 0,
+                          fileName: `report-card-${(s.grNo ?? s.studentId ?? "student").toString().replace(/\s+/g, "-")}.pdf`,
+                        })
+                      }
+                    >
+                      PDF
+                    </Button>
+                  </TableCell>
+                )}
                 {editing && (
                   <TableCell className="min-w-72">
                     <div className="flex flex-col gap-1">
@@ -569,15 +641,24 @@ function AnalysisPanel({ ec }: { ec: ExamClass }) {
 function PrintPanel({ ec }: { ec: ExamClass }) {
   const [sectionId, setSectionId] = useState<number | "">("");
   const [withhold, setWithhold] = useState(false);
+  const [top, setTop] = useState("");
+  const [minPercent, setMinPercent] = useState("");
+  const [passedOnly, setPassedOnly] = useState(false);
   const id = ec.id ?? 0;
   const section = sectionId || undefined;
+  const cardParams = () => ({
+    sectionId: section,
+    ...(top ? { top: Number(top) } : {}),
+    ...(minPercent.trim() ? { minPercent: minPercent.trim() } : {}),
+    ...(passedOnly ? { passedOnly: true } : {}),
+  });
   const print = useMutation({
     mutationFn: ({ kind }: { kind: "admit" | "sheet" | "cards"; name: string }) =>
       kind === "admit"
         ? exams.admitCards(id, { sectionId: section, withholdDefaulters: withhold })
         : kind === "sheet"
           ? exams.resultSheet(id, section)
-          : exams.reportCards(id, { sectionId: section }),
+          : exams.reportCards(id, cardParams()),
     onSuccess: (blob, { name }) => openBlob(blob, name),
     onError,
   });
@@ -586,6 +667,26 @@ function PrintPanel({ ec }: { ec: ExamClass }) {
       <Field id="pr-section" label="Section" className="max-w-xs">
         <SectionSelect id="pr-section" emptyLabel="Whole class" classId={ec.classId ?? ""} value={sectionId} onChange={setSectionId} />
       </Field>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Report card filters</CardTitle>
+          <CardDescription>
+            Optional: limit the PDF to toppers, passers, or a minimum percentage. Pick students on the Results tab, or use one
+            student via the row PDF button.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-4">
+          <Field id="pr-top" label="Top positions" hint="e.g. 3 for the first three positions">
+            <Input id="pr-top" type="number" min={1} max={500} className="w-28" value={top} onChange={(e) => setTop(e.target.value)} placeholder="All" />
+          </Field>
+          <Field id="pr-min" label="Minimum %" hint="Only students at or above this overall %">
+            <Input id="pr-min" inputMode="decimal" className="w-28" value={minPercent} onChange={(e) => setMinPercent(e.target.value)} placeholder="Any" />
+          </Field>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <Checkbox checked={passedOnly} onCheckedChange={(c) => setPassedOnly(c === true)} /> Passed only
+          </label>
+        </CardContent>
+      </Card>
       {ec.status !== "PUBLISHED" && (
         <Alert>
           <AlertTitle>Not published</AlertTitle>

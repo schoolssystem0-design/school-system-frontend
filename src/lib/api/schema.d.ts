@@ -7572,6 +7572,7 @@ export interface components {
             email: string;
             password: string;
             totpCode?: string;
+            emailCode?: string;
         };
         PlatformLoginResponse: {
             me?: components["schemas"]["PlatformMe"];

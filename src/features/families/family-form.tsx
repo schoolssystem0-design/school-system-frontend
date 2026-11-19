@@ -134,14 +134,23 @@ export function FamilyForm({
           <Field id={id("channel")} label="Messages by">
             <NativeSelect id={id("channel")} value={value.preferredChannel} onChange={set("preferredChannel")}>
               <option value="SMS">SMS</option>
+              <option value="VOICE">Urdu voice call (school phone)</option>
               <option value="WHATSAPP">WhatsApp</option>
               <option value="NONE">No messages</option>
             </NativeSelect>
           </Field>
-          <Field id={id("language")} label="Message language" hint="Roman Urdu is written in English letters, so it costs the same">
+          <Field
+            id={id("language")}
+            label="Message language"
+            hint={
+              value.preferredChannel === "VOICE"
+                ? "Spoken Urdu on the school phone for parents who cannot read SMS"
+                : "Roman Urdu is written in English letters, so it costs the same"
+            }
+          >
             <NativeSelect id={id("language")} value={value.messageLanguage} onChange={set("messageLanguage")}>
               <option value="EN">English</option>
-              <option value="UR">Roman Urdu</option>
+              <option value="UR">Urdu (voice or Roman Urdu SMS)</option>
             </NativeSelect>
           </Field>
           <Field id={id("remarks")} label="Remarks" className="sm:col-span-2">

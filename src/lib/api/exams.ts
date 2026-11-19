@@ -2,10 +2,15 @@ import { api, apiBlob, type Schemas } from "./client";
 
 /** Typed calls for Phase 6 examinations and results (FR 14). Marks and percentages are strings, as sent by the API. */
 
-function query(params: Record<string, string | number | boolean | null | undefined>) {
+function query(params: Record<string, string | number | boolean | null | undefined | (string | number)[]>) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== "") search.set(key, String(value));
+    if (value === undefined || value === null || value === "") continue;
+    if (Array.isArray(value)) {
+      for (const item of value) search.append(key, String(item));
+    } else {
+      search.set(key, String(value));
+    }
   }
   return search.toString();
 }
@@ -70,8 +75,17 @@ export const exams = {
   admitCards: (id: number, params: { sectionId?: number; withholdDefaulters?: boolean }) =>
     apiBlob(`${cls(id)}/admit-cards?${query(params)}`),
   resultSheet: (id: number, sectionId?: number) => apiBlob(`${cls(id)}/result-sheet?${query({ sectionId })}`),
-  reportCards: (id: number, params: { sectionId?: number; studentId?: number }) =>
-    apiBlob(`${cls(id)}/report-cards?${query(params)}`),
+  reportCards: (
+    id: number,
+    params: {
+      sectionId?: number;
+      studentId?: number;
+      studentIds?: number[];
+      top?: number;
+      passedOnly?: boolean;
+      minPercent?: string;
+    } = {},
+  ) => apiBlob(`${cls(id)}/report-cards?${query(params)}`),
 
   sendResults: (id: number, body: Schemas["ResultSmsRequest"], idempotencyKey: string) =>
     api<Schemas["ResultSmsReport"]>(`${cls(id)}/send-results`, {
