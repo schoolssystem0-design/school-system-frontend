@@ -176,8 +176,8 @@ function NewYearForm({ suggestedFrom, onCreated }: { suggestedFrom?: Year; onCre
             create.mutate();
           }}
         >
-          <Field id="year-name" label="Name" hint="e.g. 2026-2027">
-            <Input id="year-name" value={name} onChange={(e) => setName(e.target.value)} className="w-32" required />
+          <Field id="year-name" label="Name">
+            <Input id="year-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. 2026-2027" className="w-32" required />
           </Field>
           <Field id="year-start" label="Start date">
             <Input id="year-start" type="date" value={startDate} onChange={(e) => setStart(e.target.value)} required />
